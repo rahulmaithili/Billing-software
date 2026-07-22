@@ -23,6 +23,7 @@
 
 <script>
   tailwind.config = {
+    darkMode: 'class',
     theme: {
       extend: {
         colors: {
@@ -1564,8 +1565,12 @@ window.onload = function() {
   var savedTheme = localStorage.getItem('shivShaktiTheme') || 'dark';
   if (savedTheme === 'dark') {
     document.body.classList.add('dark-mode');
+    document.body.classList.add('dark');
+    document.documentElement.classList.add('dark');
   } else {
     document.body.classList.remove('dark-mode');
+    document.body.classList.remove('dark');
+    document.documentElement.classList.remove('dark');
   }
   
   var now = new Date();
@@ -1637,9 +1642,13 @@ function toast(msg, type) {
 function toggleTheme() {
   if (document.body.classList.contains('dark-mode')) {
     document.body.classList.remove('dark-mode');
+    document.body.classList.remove('dark');
+    document.documentElement.classList.remove('dark');
     localStorage.setItem('shivShaktiTheme', 'light');
   } else {
     document.body.classList.add('dark-mode');
+    document.body.classList.add('dark');
+    document.documentElement.classList.add('dark');
     localStorage.setItem('shivShaktiTheme', 'dark');
   }
   lucide.createIcons();
