@@ -6,40 +6,47 @@
   window.google = window.google || {};
   window.google.script = window.google.script || {};
 
-  window.google.script.run = new Proxy({}, {
-    get(target, prop) {
-      let successHandler = null;
-      let failureHandler = null;
+  class Runner {
+    constructor(successHandler = null, failureHandler = null) {
+      this._successHandler = successHandler;
+      this._failureHandler = failureHandler;
 
-      const handler = {
-        withSuccessHandler(fn) {
-          successHandler = fn;
-          return handler;
-        },
-        withFailureHandler(fn) {
-          failureHandler = fn;
-          return handler;
-        }
-      };
-
-      return function(...args) {
-        Promise.resolve().then(async () => {
-          try {
-            const result = await handleBackendCall(prop, args);
-            if (typeof successHandler === 'function') {
-              successHandler(result);
-            }
-          } catch (err) {
-            console.error(`Polyfill Error in ${prop}:`, err);
-            if (typeof failureHandler === 'function') {
-              failureHandler(err);
-            }
+      return new Proxy(this, {
+        get(target, prop) {
+          if (prop === 'withSuccessHandler') {
+            return function(fn) {
+              return new Runner(fn, target._failureHandler);
+            };
           }
-        });
-        return handler;
-      };
+          if (prop === 'withFailureHandler') {
+            return function(fn) {
+              return new Runner(target._successHandler, fn);
+            };
+          }
+
+          // Intercept backend function call
+          return function(...args) {
+            Promise.resolve().then(async () => {
+              try {
+                const result = await handleBackendCall(prop, args);
+                if (typeof target._successHandler === 'function') {
+                  target._successHandler(result);
+                }
+              } catch (err) {
+                console.error(`Polyfill Error in ${prop}:`, err);
+                if (typeof target._failureHandler === 'function') {
+                  target._failureHandler(err);
+                }
+              }
+            });
+          };
+        }
+      });
     }
-  });
+  }
+
+  // Initialize the compatibility runner
+  window.google.script.run = new Runner();
 
   async function handleBackendCall(funcName, args) {
     const db = window.dbService;
@@ -238,7 +245,6 @@
 
         function inRange(dStr) {
           if (!dStr) return false;
-          // dStr is in format DD-MM-YYYY
           const parts = dStr.split('-');
           const dt = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
           dt.setHours(0, 0, 0, 0);
