@@ -5701,10 +5701,7 @@ function addOnlineDetailRow(num, type) {
     { value: 'SBI', text: 'SBI' },
     { value: 'SBI-Due', text: 'SBI (Due)' },
     { value: 'HPCL', text: 'HPCL' },
-    { value: 'HPCL-Due', text: 'HPCL (Due)' },
-    { value: 'Other', text: 'Other' },
-    { value: 'Other-Due', text: 'Other (Due)' },
-    { value: 'Dues', text: 'Dues' }
+    { value: 'Other', text: 'Other' }
   ].map(function(opt) {
     var sel = opt.value === type ? 'selected' : '';
     return '<option value="' + opt.value + '" ' + sel + '>' + opt.text + '</option>';
