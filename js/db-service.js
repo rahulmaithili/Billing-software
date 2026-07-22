@@ -445,4 +445,3 @@ class DBService {
 }
 
 window.dbService = new DBService();
-export default window.dbService;
