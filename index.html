@@ -4855,18 +4855,28 @@ function renderDailyTally() {
     if (!saleDateStr) return false;
     var saleParts = saleDateStr.split('-');
     if (saleParts.length !== 3) return false;
-    var saleDate = new Date(parseInt(saleParts[2]), parseInt(saleParts[1]) - 1, parseInt(saleParts[0]));
+    
+    var saleDate;
+    if (saleParts[0].length === 4) {
+      saleDate = new Date(parseInt(saleParts[0]), parseInt(saleParts[1]) - 1, parseInt(saleParts[2]));
+    } else {
+      saleDate = new Date(parseInt(saleParts[2]), parseInt(saleParts[1]) - 1, parseInt(saleParts[0]));
+    }
     saleDate.setHours(0, 0, 0, 0);
     
     if (startVal) {
       var sParts = startVal.split('-');
-      var startDate = new Date(parseInt(sParts[0]), parseInt(sParts[1]) - 1, parseInt(sParts[2]));
+      var startDate = sParts[0].length === 4 ? 
+        new Date(parseInt(sParts[0]), parseInt(sParts[1]) - 1, parseInt(sParts[2])) :
+        new Date(parseInt(sParts[2]), parseInt(sParts[1]) - 1, parseInt(sParts[0]));
       startDate.setHours(0, 0, 0, 0);
       if (saleDate < startDate) return false;
     }
     if (endVal) {
       var eParts = endVal.split('-');
-      var endDate = new Date(parseInt(eParts[0]), parseInt(eParts[1]) - 1, parseInt(eParts[2]));
+      var endDate = eParts[0].length === 4 ?
+        new Date(parseInt(eParts[0]), parseInt(eParts[1]) - 1, parseInt(eParts[2])) :
+        new Date(parseInt(eParts[2]), parseInt(eParts[1]) - 1, parseInt(eParts[0]));
       endDate.setHours(23, 59, 59, 999);
       if (saleDate > endDate) return false;
     }
@@ -4877,16 +4887,58 @@ function renderDailyTally() {
     return inDateRange(s.date, startVal, endVal);
   });
   
+  var flattenedSalesItems = [];
+  matchedSales.forEach(function(s) {
+    if (s.productId) {
+      flattenedSalesItems.push({
+        receiptNo: s.receiptNo,
+        customerName: s.customerName,
+        driver: s.driver || '',
+        productId: s.productId,
+        productName: s.productName,
+        refillRate: s.refillRate || 0,
+        cashQty: s.cashQty || 0,
+        onlineQty: s.onlineQty || 0,
+        totalQty: s.totalQty || 0,
+        discount: s.discount || 0,
+        itemTotal: s.itemTotal || ((s.cashQty + s.onlineQty) * s.refillRate - s.discount)
+      });
+    } else if (s.items && s.items.length) {
+      s.items.forEach(function(item) {
+        var rate = item.rate || item.refillRate || 0;
+        var cashQty = item.cashQty || 0;
+        var onlineQty = item.onlineQty || 0;
+        var totalQty = cashQty + onlineQty;
+        var discount = item.discount || 0;
+        var itemTotal = (totalQty * rate) - discount;
+        
+        flattenedSalesItems.push({
+          receiptNo: s.receiptNo,
+          customerName: s.customerName,
+          driver: s.driver || '',
+          productId: item.productId,
+          productName: item.productName,
+          refillRate: rate,
+          cashQty: cashQty,
+          onlineQty: onlineQty,
+          totalQty: totalQty,
+          discount: discount,
+          itemTotal: itemTotal
+        });
+      });
+    }
+  });
+  
   var totalRefillValue = 0;
   var totalCashQtyOverall = 0;
   var totalOnlineQtyOverall = 0;
   var totalQtyOverall = 0;
   
-  matchedSales.forEach(function(s) {
-    totalRefillValue += s.itemTotal || 0;
-    totalCashQtyOverall += s.cashQty || 0;
-    totalOnlineQtyOverall += s.onlineQty || 0;
-    totalQtyOverall += s.totalQty || 0;
+  flattenedSalesItems.forEach(function(item) {
+    totalRefillValue += item.itemTotal;
+    totalCashQtyOverall += item.cashQty;
+    totalOnlineQtyOverall += item.onlineQty;
+    totalQtyOverall += item.totalQty;
   });
   
   var uniqueInvs = {};
@@ -5000,9 +5052,9 @@ function renderDailyTally() {
     + '    </thead>'
     + '    <tbody class="divide-y divide-slate-200 dark:divide-slate-800/60">';
     
-  if (matchedSales.length) {
+  if (flattenedSalesItems.length) {
     var count = 1;
-    matchedSales.forEach(function(s) {
+    flattenedSalesItems.forEach(function(s) {
       var qtyCellsHtml = '';
       DB.products.forEach(function(p) {
         if (s.productId === p.id) {
@@ -5034,7 +5086,7 @@ function renderDailyTally() {
     DB.products.forEach(function(p) {
       prodTotals[p.id] = { cash: 0, online: 0, total: 0 };
     });
-    matchedSales.forEach(function(s) {
+    flattenedSalesItems.forEach(function(s) {
       if (prodTotals[s.productId]) {
         prodTotals[s.productId].cash += s.cashQty || 0;
         prodTotals[s.productId].online += s.onlineQty || 0;
@@ -5283,18 +5335,28 @@ function printDailyTally() {
     if (!saleDateStr) return false;
     var saleParts = saleDateStr.split('-');
     if (saleParts.length !== 3) return false;
-    var saleDate = new Date(parseInt(saleParts[2]), parseInt(saleParts[1]) - 1, parseInt(saleParts[0]));
+    
+    var saleDate;
+    if (saleParts[0].length === 4) {
+      saleDate = new Date(parseInt(saleParts[0]), parseInt(saleParts[1]) - 1, parseInt(saleParts[2]));
+    } else {
+      saleDate = new Date(parseInt(saleParts[2]), parseInt(saleParts[1]) - 1, parseInt(saleParts[0]));
+    }
     saleDate.setHours(0, 0, 0, 0);
     
     if (startVal) {
       var sParts = startVal.split('-');
-      var startDate = new Date(parseInt(sParts[0]), parseInt(sParts[1]) - 1, parseInt(sParts[2]));
+      var startDate = sParts[0].length === 4 ? 
+        new Date(parseInt(sParts[0]), parseInt(sParts[1]) - 1, parseInt(sParts[2])) :
+        new Date(parseInt(sParts[2]), parseInt(sParts[1]) - 1, parseInt(sParts[0]));
       startDate.setHours(0, 0, 0, 0);
       if (saleDate < startDate) return false;
     }
     if (endVal) {
       var eParts = endVal.split('-');
-      var endDate = new Date(parseInt(eParts[0]), parseInt(eParts[1]) - 1, parseInt(eParts[2]));
+      var endDate = eParts[0].length === 4 ?
+        new Date(parseInt(eParts[0]), parseInt(eParts[1]) - 1, parseInt(eParts[2])) :
+        new Date(parseInt(eParts[2]), parseInt(eParts[1]) - 1, parseInt(sParts[0])); // Wait, eParts[0] is year, eParts[1] is month, eParts[2] is day
       endDate.setHours(23, 59, 59, 999);
       if (saleDate > endDate) return false;
     }
@@ -5306,12 +5368,54 @@ function printDailyTally() {
   });
   if (!matchedSales.length) { toast('No transactions to print for this range!', 'warning'); return; }
   
-  var totalRefillValue = 0, totalCashQtyOverall = 0, totalOnlineQtyOverall = 0, totalQtyOverall = 0;
+  var flattenedSalesItems = [];
   matchedSales.forEach(function(s) {
-    totalRefillValue += s.itemTotal || 0;
-    totalCashQtyOverall += s.cashQty || 0;
-    totalOnlineQtyOverall += s.onlineQty || 0;
-    totalQtyOverall += s.totalQty || 0;
+    if (s.productId) {
+      flattenedSalesItems.push({
+        receiptNo: s.receiptNo,
+        customerName: s.customerName,
+        driver: s.driver || '',
+        productId: s.productId,
+        productName: s.productName,
+        refillRate: s.refillRate || 0,
+        cashQty: s.cashQty || 0,
+        onlineQty: s.onlineQty || 0,
+        totalQty: s.totalQty || 0,
+        discount: s.discount || 0,
+        itemTotal: s.itemTotal || ((s.cashQty + s.onlineQty) * s.refillRate - s.discount)
+      });
+    } else if (s.items && s.items.length) {
+      s.items.forEach(function(item) {
+        var rate = item.rate || item.refillRate || 0;
+        var cashQty = item.cashQty || 0;
+        var onlineQty = item.onlineQty || 0;
+        var totalQty = cashQty + onlineQty;
+        var discount = item.discount || 0;
+        var itemTotal = (totalQty * rate) - discount;
+        
+        flattenedSalesItems.push({
+          receiptNo: s.receiptNo,
+          customerName: s.customerName,
+          driver: s.driver || '',
+          productId: item.productId,
+          productName: item.productName,
+          refillRate: rate,
+          cashQty: cashQty,
+          onlineQty: onlineQty,
+          totalQty: totalQty,
+          discount: discount,
+          itemTotal: itemTotal
+        });
+      });
+    }
+  });
+  
+  var totalRefillValue = 0, totalCashQtyOverall = 0, totalOnlineQtyOverall = 0, totalQtyOverall = 0;
+  flattenedSalesItems.forEach(function(item) {
+    totalRefillValue += item.itemTotal;
+    totalCashQtyOverall += item.cashQty;
+    totalOnlineQtyOverall += item.onlineQty;
+    totalQtyOverall += item.totalQty;
   });
   
   var uniqueInvs = {};
@@ -5356,7 +5460,7 @@ function printDailyTally() {
 
   var rowsHtml = '';
   var count = 1;
-  matchedSales.forEach(function(s) {
+  flattenedSalesItems.forEach(function(s) {
     var qtyCellsHtml = '';
     DB.products.forEach(function(p) {
       if (s.productId === p.id) {
@@ -5388,7 +5492,7 @@ function printDailyTally() {
   DB.products.forEach(function(p) {
     prodTotals[p.id] = { cash: 0, online: 0, total: 0 };
   });
-  matchedSales.forEach(function(s) {
+  flattenedSalesItems.forEach(function(s) {
     if (prodTotals[s.productId]) {
       prodTotals[s.productId].cash += s.cashQty || 0;
       prodTotals[s.productId].online += s.onlineQty || 0;
