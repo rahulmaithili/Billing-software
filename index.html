@@ -287,6 +287,12 @@
       <a href="#" onclick="nav('users')" id="n-users" data-tooltip="Manage Users" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="shield-alert" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Manage Users</span>
       </a>
+      <a href="#" onclick="nav('audit')" id="n-audit" data-tooltip="Audit Log" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
+        <i data-lucide="shield-check" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Audit Log</span>
+      </a>
+      <a href="#" onclick="nav('login-history')" id="n-login-history" data-tooltip="Login History" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
+        <i data-lucide="log-in" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Login History</span>
+      </a>
       <a href="#" onclick="nav('reports')" id="n-reports" data-tooltip="Reports & Analytics" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="bar-chart-2" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Reports & Analytics</span>
       </a>
@@ -1200,7 +1206,7 @@
               <i data-lucide="save" class="h-4 w-4"></i> Save Profile
             </button>
           </div>
-          <!-- Danger -->
+          <!-- Danger Zone -->
           <div class="pt-4 border-t border-red-200 dark:border-red-955 mt-4">
             <h4 class="text-red-650 dark:text-red-500 font-bold uppercase tracking-wider text-[11px] border-l-4 border-red-600 pl-2 mb-3">Danger Zone</h4>
             <div class="bg-red-50 dark:bg-red-955/20 border border-red-200 dark:border-red-900/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1211,11 +1217,180 @@
               </button>
             </div>
           </div>
+
+          <!-- Backup Section -->
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-800 mt-2">
+            <h4 class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] border-l-4 border-emerald-500 pl-2 mb-3">Backup & Data</h4>
+            <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <p class="font-bold text-slate-800 dark:text-white text-sm">Backup to Google Drive</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Creates a timestamped copy of the spreadsheet in your Google Drive. Safe & automated.</p>
+                <p class="text-[10px] text-slate-400 mt-1" id="last-backup-time">Last backup: Not backed up yet</p>
+              </div>
+              <button onclick="triggerGoogleDriveBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm flex items-center gap-2 shrink-0 shadow-md">
+                <i data-lucide="cloud-upload" class="h-4 w-4"></i> Backup Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Invoice Template Customizer -->
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-800 mt-2">
+            <h4 class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] border-l-4 border-brand-500 pl-2 mb-3">Invoice Template Settings</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 block mb-2">Accent Color</label>
+                <div class="flex gap-2 flex-wrap" id="inv-color-picker">
+                  <button onclick="setInvoiceColor('#ea580c')" class="h-8 w-8 rounded-lg bg-orange-600 border-2 border-white shadow ring-2 ring-orange-500" title="Orange (Default)"></button>
+                  <button onclick="setInvoiceColor('#2563eb')" class="h-8 w-8 rounded-lg bg-blue-600 border-2 border-transparent hover:border-white shadow" title="Blue"></button>
+                  <button onclick="setInvoiceColor('#16a34a')" class="h-8 w-8 rounded-lg bg-green-600 border-2 border-transparent hover:border-white shadow" title="Green"></button>
+                  <button onclick="setInvoiceColor('#7c3aed')" class="h-8 w-8 rounded-lg bg-violet-700 border-2 border-transparent hover:border-white shadow" title="Purple"></button>
+                  <button onclick="setInvoiceColor('#0f172a')" class="h-8 w-8 rounded-lg bg-slate-900 border-2 border-transparent hover:border-white shadow" title="Black"></button>
+                  <button onclick="setInvoiceColor('#dc2626')" class="h-8 w-8 rounded-lg bg-red-600 border-2 border-transparent hover:border-white shadow" title="Red"></button>
+                </div>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 block mb-2">Font Style</label>
+                <select id="inv-font" onchange="saveInvoiceTemplate()" class="w-full rounded-lg p-2.5 text-sm">
+                  <option value="Outfit">Outfit (Default)</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Georgia">Georgia (Serif)</option>
+                  <option value="Courier New">Courier New (Mono)</option>
+                  <option value="Tahoma">Tahoma</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-3">
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 block mb-2">Layout Style</label>
+                <select id="inv-layout" onchange="saveInvoiceTemplate()" class="w-full rounded-lg p-2.5 text-sm">
+                  <option value="standard">Standard (Default)</option>
+                  <option value="compact">Compact</option>
+                  <option value="modern">Modern (Color Header)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 block mb-2">Show Bank Details</label>
+                <select id="inv-show-bank" onchange="saveInvoiceTemplate()" class="w-full rounded-lg p-2.5 text-sm">
+                  <option value="yes">Yes — Show bank & UPI</option>
+                  <option value="no">No — Hide bank details</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
+              <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600 shrink-0"></i>
+              <p class="text-[11px] text-slate-600 dark:text-slate-400">Template settings are saved locally and applied to all future printed invoices.</p>
+              <button onclick="saveInvoiceTemplate()" class="ml-auto bg-brand-600 hover:bg-brand-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs shrink-0">Save Template</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUDIT LOG ═══════════════════════════════════════════════ -->
+    <div class="page" id="p-audit">
+      <div class="glass-card rounded-xl p-4 shadow-sm mb-5 flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex gap-3 items-center flex-wrap">
+          <input type="text" id="audit-search" oninput="renderAuditLog()" placeholder="Search action, user..." class="rounded-lg py-2 px-3 text-sm w-56">
+          <select id="audit-user-filter" onchange="renderAuditLog()" class="rounded-lg py-2 px-3 text-sm">
+            <option value="ALL">All Users</option>
+          </select>
+          <select id="audit-action-filter" onchange="renderAuditLog()" class="rounded-lg py-2 px-3 text-sm">
+            <option value="ALL">All Actions</option>
+            <option value="CREATE">Create</option>
+            <option value="EDIT">Edit</option>
+            <option value="DELETE">Delete</option>
+            <option value="PAYMENT">Payment</option>
+            <option value="LOGIN">Login</option>
+          </select>
+        </div>
+        <button onclick="exportAuditLog()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5">
+          <i data-lucide="download" class="h-4 w-4"></i> Export CSV
+        </button>
+      </div>
+
+      <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-800 dark:text-white text-sm">
+          <i data-lucide="shield-check" class="h-4 w-4 text-brand-600"></i> Action Audit Log
+          <span class="ml-auto text-[10px] font-normal text-slate-500" id="audit-count">0 entries</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">
+              <th class="p-3">Timestamp</th>
+              <th class="p-3">User</th>
+              <th class="p-3">Action</th>
+              <th class="p-3">Description</th>
+              <th class="p-3">Module</th>
+            </tr></thead>
+            <tbody id="audit-body" class="divide-y divide-slate-100 dark:divide-slate-800/40">
+              <tr><td colspan="5" class="p-8 text-center text-slate-400">Loading audit log...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LOGIN HISTORY ════════════════════════════════════════════ -->
+    <div class="page" id="p-login-history">
+      <div class="glass-card rounded-xl p-4 shadow-sm mb-5 flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex gap-3 items-center">
+          <input type="text" id="lh-search" oninput="renderLoginHistory()" placeholder="Search user or device..." class="rounded-lg py-2 px-3 text-sm w-56">
+          <select id="lh-user-filter" onchange="renderLoginHistory()" class="rounded-lg py-2 px-3 text-sm">
+            <option value="ALL">All Users</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-slate-500 font-semibold" id="lh-count">0 entries</span>
+          <button onclick="exportLoginHistory()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5">
+            <i data-lucide="download" class="h-4 w-4"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Session Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5" id="lh-stats-row">
+        <div class="glass-card rounded-2xl p-4 text-center shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase">Total Logins</p>
+          <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white mt-1" id="lh-kpi-total">0</h3>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center shadow-sm">
+          <p class="text-[10px] font-bold text-emerald-600 uppercase">Successful</p>
+          <h3 class="text-2xl font-extrabold text-emerald-600 mt-1" id="lh-kpi-ok">0</h3>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center shadow-sm">
+          <p class="text-[10px] font-bold text-rose-600 uppercase">Failed</p>
+          <h3 class="text-2xl font-extrabold text-rose-600 mt-1" id="lh-kpi-fail">0</h3>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center shadow-sm">
+          <p class="text-[10px] font-bold text-brand-600 uppercase">Unique Users</p>
+          <h3 class="text-2xl font-extrabold text-brand-600 mt-1" id="lh-kpi-users">0</h3>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-800 dark:text-white text-sm">
+          <i data-lucide="log-in" class="h-4 w-4 text-brand-600"></i> Login History
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">
+              <th class="p-3">Date & Time</th>
+              <th class="p-3">Username</th>
+              <th class="p-3">Role</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Device / Browser</th>
+            </tr></thead>
+            <tbody id="lh-body" class="divide-y divide-slate-100 dark:divide-slate-800/40">
+              <tr><td colspan="5" class="p-8 text-center text-slate-400">Loading login history...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
     <!-- ═══ USER MANAGEMENT ═════════════════════════════════════════ -->
+
     <div class="page" id="p-users">
       <div class="glass-card rounded-xl p-4 shadow-sm flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
@@ -2223,7 +2398,9 @@ function nav(pageId) {
     company: 'Company Profile & Invoice Settings',
     reports: 'Reports & Analytics',
     'daily-tally': 'Daily Tally & Hisab Report',
-    users: 'Manage Portal Users Directory'
+    users: 'Manage Portal Users Directory',
+    audit: 'Action Audit Log',
+    'login-history': 'Login & Session History'
   };
   g('page-title').textContent = titles[pageId] || 'Shiv Shakti Gas Portal';
   
@@ -2374,6 +2551,24 @@ function renderCurrentPage() {
   else if (CURRENT_PAGE === 'users') renderUsers();
   else if (CURRENT_PAGE === 'reports') renderReports();
   else if (CURRENT_PAGE === 'daily-tally') renderDailyTally();
+  else if (CURRENT_PAGE === 'audit') {
+    // Populate user filter from users list
+    var auf = g('audit-user-filter');
+    if (auf && auf.options.length <= 1 && DB.users) {
+      DB.users.forEach(function(u){ auf.innerHTML += '<option value="'+u.username+'">'+u.username+'</option>'; });
+    }
+    renderAuditLog();
+  }
+  else if (CURRENT_PAGE === 'login-history') {
+    var lhf = g('lh-user-filter');
+    if (lhf && lhf.options.length <= 1 && DB.users) {
+      DB.users.forEach(function(u){ lhf.innerHTML += '<option value="'+u.username+'">'+u.username+'</option>'; });
+    }
+    renderLoginHistory();
+  }
+  else if (CURRENT_PAGE === 'company') {
+    setTimeout(applyInvoiceTemplateToUI, 50);
+  }
   else if (CURRENT_PAGE === 'stock') {
     // Populate driver filter dropdown
     var sdf = g('stock-driver-filter');
@@ -8102,6 +8297,263 @@ function checkDashboardLowStock() {
     alertEl.classList.add('hidden');
   }
 }
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4A — AUDIT LOG
+// ════════════════════════════════════════════════════════════════
+function renderAuditLog() {
+  var q       = (g('audit-search') ? g('audit-search').value : '').toLowerCase();
+  var userF   = g('audit-user-filter') ? g('audit-user-filter').value : 'ALL';
+  var actionF = g('audit-action-filter') ? g('audit-action-filter').value : 'ALL';
+  var tbody   = g('audit-body');
+  var countEl = g('audit-count');
+  if (!tbody) return;
+
+  var logs = DB.auditLog || [];
+
+  // Populate user filter dropdown
+  var auf = g('audit-user-filter');
+  if (auf && auf.options.length <= 1) {
+    var users = [...new Set(logs.map(function(l){ return l.user || '—'; }))].sort();
+    users.forEach(function(u){ auf.innerHTML += '<option value="' + u + '">' + u + '</option>'; });
+  }
+
+  var filtered = logs.filter(function(l) {
+    if (userF !== 'ALL' && l.user !== userF) return false;
+    if (actionF !== 'ALL' && (l.action||'').toUpperCase() !== actionF) return false;
+    if (q && !(
+      (l.user||'').toLowerCase().includes(q) ||
+      (l.description||'').toLowerCase().includes(q) ||
+      (l.module||'').toLowerCase().includes(q)
+    )) return false;
+    return true;
+  });
+
+  // Sort newest first
+  filtered.sort(function(a,b){ return (b.timestamp||'').localeCompare(a.timestamp||''); });
+
+  if (countEl) countEl.textContent = filtered.length + ' entries';
+
+  var actionColors = {
+    CREATE:  'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400',
+    EDIT:    'bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400',
+    DELETE:  'bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400',
+    PAYMENT: 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400',
+    LOGIN:   'bg-brand-100 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400',
+    BACKUP:  'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'
+  };
+
+  tbody.innerHTML = filtered.length ? filtered.map(function(l) {
+    var actionKey = (l.action || '').toUpperCase();
+    var badge = '<span class="font-bold text-[9px] px-2 py-0.5 rounded-full uppercase ' + (actionColors[actionKey] || actionColors.LOGIN) + '">' + (l.action||'—') + '</span>';
+    return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">'
+      + '<td class="p-3 text-slate-500 whitespace-nowrap">' + (l.timestamp || '—') + '</td>'
+      + '<td class="p-3 font-bold text-slate-800 dark:text-white">' + (l.user||'System') + '</td>'
+      + '<td class="p-3">' + badge + '</td>'
+      + '<td class="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title="' + (l.description||'') + '">' + (l.description||'—') + '</td>'
+      + '<td class="p-3 text-slate-500">' + (l.module||'—') + '</td>'
+      + '</tr>';
+  }).join('') : '<tr><td colspan="5" class="p-8 text-center text-slate-400">No audit entries found for the selected filters.</td></tr>';
+}
+
+function exportAuditLog() {
+  var logs = (DB.auditLog || []).slice().sort(function(a,b){ return (b.timestamp||'').localeCompare(a.timestamp||''); });
+  if (!logs.length) { toast('No audit data to export!', 'error'); return; }
+  var rows = [['Timestamp','User','Action','Description','Module']];
+  logs.forEach(function(l){ rows.push([l.timestamp||'', l.user||'', l.action||'', l.description||'', l.module||'']); });
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='audit_log.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Audit log exported ✓', 'success');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4B — LOGIN HISTORY
+// ════════════════════════════════════════════════════════════════
+function renderLoginHistory() {
+  var q      = (g('lh-search') ? g('lh-search').value : '').toLowerCase();
+  var userF  = g('lh-user-filter') ? g('lh-user-filter').value : 'ALL';
+  var tbody  = g('lh-body');
+  var countEl = g('lh-count');
+  if (!tbody) return;
+
+  var logs = DB.loginHistory || [];
+
+  // Populate user filter
+  var lhf = g('lh-user-filter');
+  if (lhf && lhf.options.length <= 1) {
+    var users = [...new Set(logs.map(function(l){ return l.username||''; }))].filter(Boolean).sort();
+    users.forEach(function(u){ lhf.innerHTML += '<option value="'+u+'">'+u+'</option>'; });
+  }
+
+  // KPI stats
+  var total  = logs.length;
+  var ok     = logs.filter(function(l){ return l.status === 'SUCCESS'; }).length;
+  var fail   = logs.filter(function(l){ return l.status === 'FAILED'; }).length;
+  var unique = new Set(logs.map(function(l){ return l.username; })).size;
+  if (g('lh-kpi-total')) g('lh-kpi-total').textContent = total;
+  if (g('lh-kpi-ok'))    g('lh-kpi-ok').textContent    = ok;
+  if (g('lh-kpi-fail'))  g('lh-kpi-fail').textContent  = fail;
+  if (g('lh-kpi-users')) g('lh-kpi-users').textContent = unique;
+
+  var filtered = logs.filter(function(l) {
+    if (userF !== 'ALL' && l.username !== userF) return false;
+    if (q && !(
+      (l.username||'').toLowerCase().includes(q) ||
+      (l.device||'').toLowerCase().includes(q) ||
+      (l.role||'').toLowerCase().includes(q)
+    )) return false;
+    return true;
+  }).sort(function(a,b){ return (b.timestamp||'').localeCompare(a.timestamp||''); });
+
+  if (countEl) countEl.textContent = filtered.length + ' entries';
+
+  tbody.innerHTML = filtered.length ? filtered.map(function(l) {
+    var isOk = l.status === 'SUCCESS';
+    var badge = isOk
+      ? '<span class="bg-emerald-100 text-emerald-700 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">✓ Success</span>'
+      : '<span class="bg-rose-100 text-rose-700 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">✗ Failed</span>';
+    return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">'
+      + '<td class="p-3 text-slate-500 whitespace-nowrap">' + (l.timestamp||'—') + '</td>'
+      + '<td class="p-3 font-bold text-slate-800 dark:text-white">' + (l.username||'—') + '</td>'
+      + '<td class="p-3 text-slate-500">' + (l.role||'—') + '</td>'
+      + '<td class="p-3">' + badge + '</td>'
+      + '<td class="p-3 text-slate-500 text-[10px]">' + (l.device||'Unknown Device') + '</td>'
+      + '</tr>';
+  }).join('') : '<tr><td colspan="5" class="p-8 text-center text-slate-400">No login records found.</td></tr>';
+}
+
+function exportLoginHistory() {
+  var logs = (DB.loginHistory || []).slice().sort(function(a,b){ return (b.timestamp||'').localeCompare(a.timestamp||''); });
+  if (!logs.length) { toast('No login history to export!', 'error'); return; }
+  var rows = [['Timestamp','Username','Role','Status','Device']];
+  logs.forEach(function(l){ rows.push([l.timestamp||'', l.username||'', l.role||'', l.status||'', l.device||'']); });
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='login_history.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Login history exported ✓', 'success');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4C — GOOGLE DRIVE BACKUP
+// ════════════════════════════════════════════════════════════════
+function triggerGoogleDriveBackup() {
+  var btn = document.querySelector('[onclick="triggerGoogleDriveBackup()"]');
+  if (btn) { btn.innerHTML = '<i data-lucide="loader" class="h-4 w-4 animate-spin"></i> Backing up...'; btn.disabled = true; lucide.createIcons(); }
+  
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (btn) { btn.innerHTML = '<i data-lucide="cloud-upload" class="h-4 w-4"></i> Backup Now'; btn.disabled = false; lucide.createIcons(); }
+      if (r && r.ok) {
+        var now = new Date().toLocaleString('en-IN');
+        localStorage.setItem('lastBackup', now);
+        var lbt = g('last-backup-time');
+        if (lbt) lbt.textContent = 'Last backup: ' + now;
+        toast('✅ Backup successful! Saved to Google Drive.', 'success');
+        // Log to audit
+        logAuditAction('BACKUP', 'Google Drive backup created', 'System');
+      } else {
+        toast('Backup failed: ' + ((r && r.error) || 'Unknown error'), 'error');
+      }
+    })
+    .withFailureHandler(function(e) {
+      if (btn) { btn.innerHTML = '<i data-lucide="cloud-upload" class="h-4 w-4"></i> Backup Now'; btn.disabled = false; lucide.createIcons(); }
+      toast('Backup error: ' + e.message, 'error');
+    })
+    .apiBackupToGoogleDrive();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4D — INVOICE TEMPLATE CUSTOMIZER
+// ════════════════════════════════════════════════════════════════
+var INVOICE_TEMPLATE = {
+  color: '#ea580c',
+  font: 'Outfit',
+  layout: 'standard',
+  showBank: 'yes'
+};
+
+function loadInvoiceTemplate() {
+  try {
+    var saved = localStorage.getItem('invoiceTemplate');
+    if (saved) INVOICE_TEMPLATE = JSON.parse(saved);
+  } catch(e) {}
+  applyInvoiceTemplateToUI();
+}
+
+function applyInvoiceTemplateToUI() {
+  var fontEl = g('inv-font');
+  var layoutEl = g('inv-layout');
+  var bankEl = g('inv-show-bank');
+  if (fontEl) fontEl.value = INVOICE_TEMPLATE.font || 'Outfit';
+  if (layoutEl) layoutEl.value = INVOICE_TEMPLATE.layout || 'standard';
+  if (bankEl) bankEl.value = INVOICE_TEMPLATE.showBank || 'yes';
+  // Update color picker rings
+  var btns = document.querySelectorAll('#inv-color-picker button');
+  btns.forEach(function(btn) {
+    var clr = (btn.getAttribute('onclick')||'').match(/'(#[^']+)'/);
+    if (clr && clr[1] === INVOICE_TEMPLATE.color) {
+      btn.style.outline = '3px solid ' + INVOICE_TEMPLATE.color;
+      btn.style.outlineOffset = '2px';
+    } else {
+      btn.style.outline = 'none';
+    }
+  });
+}
+
+function setInvoiceColor(color) {
+  INVOICE_TEMPLATE.color = color;
+  saveInvoiceTemplate();
+  applyInvoiceTemplateToUI();
+}
+
+function saveInvoiceTemplate() {
+  var fontEl = g('inv-font');
+  var layoutEl = g('inv-layout');
+  var bankEl = g('inv-show-bank');
+  if (fontEl) INVOICE_TEMPLATE.font = fontEl.value;
+  if (layoutEl) INVOICE_TEMPLATE.layout = layoutEl.value;
+  if (bankEl) INVOICE_TEMPLATE.showBank = bankEl.value;
+  try { localStorage.setItem('invoiceTemplate', JSON.stringify(INVOICE_TEMPLATE)); } catch(e){}
+  toast('Invoice template saved ✓', 'success');
+  applyInvoiceTemplateToUI();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4E — LOCAL AUDIT ACTION LOGGER (Frontend)
+// ════════════════════════════════════════════════════════════════
+function logAuditAction(action, description, module) {
+  // Push to DB.auditLog if exists, for in-session display
+  if (!DB.auditLog) DB.auditLog = [];
+  var now = new Date();
+  var ts = now.getDate().toString().padStart(2,'0') + '-' + (now.getMonth()+1).toString().padStart(2,'0') + '-' + now.getFullYear()
+    + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  DB.auditLog.unshift({
+    timestamp: ts,
+    user: (DB.currentUser && DB.currentUser.username) || 'Admin',
+    action: action,
+    description: description,
+    module: module || 'General'
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 4 — WIRE INTO NAV + renderCurrentPage
+// ════════════════════════════════════════════════════════════════
+// Called once on page load to restore invoice template
+document.addEventListener('DOMContentLoaded', function() {
+  var lbt = g('last-backup-time');
+  if (lbt) {
+    var savedBackup = localStorage.getItem('lastBackup');
+    if (savedBackup) lbt.textContent = 'Last backup: ' + savedBackup;
+  }
+  loadInvoiceTemplate();
+});
+
 
 
 
