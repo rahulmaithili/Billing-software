@@ -4971,6 +4971,7 @@ function onReturnCustomerChange() {
   if (!pending.length) {
     tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-bold">This customer has no pending cylinder returns</td></tr>';
     return;
+  }
   tbody.innerHTML = pending.map(function(t, i) {
     return '<tr class="r-item-row" data-product-id="' + t.productId + '" data-product-name="' + t.productName + '">'
       + '<td class="p-2 font-bold text-slate-700 dark:text-slate-205">' + t.productName + '</td>'
