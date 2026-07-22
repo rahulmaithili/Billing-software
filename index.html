@@ -1459,6 +1459,22 @@
   </div>
 </div>
 
+<!-- Detailed View Modal -->
+<div class="modal-overlay" id="modal-view-detail">
+  <div class="modal-box !w-[600px]">
+    <div class="bg-slate-900 text-white p-5 rounded-t-2xl flex items-center justify-between border-b border-slate-800">
+      <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="info" class="h-4.5 w-4.5 text-brand-500"></i> Detail Preview</h3>
+      <button onclick="closeModal('modal-view-detail')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="h-5 w-5"></i></button>
+    </div>
+    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar" id="view-detail-content">
+      <!-- Dynamic details content -->
+    </div>
+    <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+      <button onclick="closeModal('modal-view-detail')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-5 rounded-lg text-sm transition-all shadow-md">Close Preview</button>
+    </div>
+  </div>
+</div>
+
 <!-- Gmail & WhatsApp Share Modal -->
 <div class="modal-overlay" id="modal-share">
   <div class="modal-box !w-[550px]">
@@ -1969,6 +1985,7 @@ function renderParties() {
       + '<td class="p-4 text-slate-700 dark:text-slate-300">' + (p.email || '—') + '</td>'
       + '<td class="p-4 text-slate-700 dark:text-slate-300">' + p.address + '</td>'
       + '<td class="p-4 text-center">'
+      + '<button onclick="viewParty(\'' + p.id + '\')" class="text-indigo-500 dark:text-indigo-400 hover:underline mr-3" title="View Details"><i data-lucide="eye" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="editParty(\'' + p.id + '\')" class="text-blue-500 dark:text-blue-400 hover:underline mr-3"><i data-lucide="pencil" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="delParty(\'' + p.id + '\')" class="text-rose-500 dark:text-rose-455 hover:underline"><i data-lucide="trash-2" class="h-4.5 w-4.5 inline"></i></button>'
       + '</td></tr>';
@@ -2060,6 +2077,7 @@ function renderDrivers() {
       + '<td class="p-4 text-slate-700 dark:text-slate-300">' + d.mobile + '</td>'
       + '<td class="p-4 text-slate-700 dark:text-slate-300">' + (d.vehicleNo || '—') + '</td>'
       + '<td class="p-4 text-center">'
+      + '<button onclick="viewDriver(\'' + d.id + '\')" class="text-indigo-500 dark:text-indigo-400 hover:underline mr-3" title="View Details"><i data-lucide="eye" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="editDriver(\'' + d.id + '\')" class="text-blue-500 dark:text-blue-400 hover:underline mr-3"><i data-lucide="pencil" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="delDriver(\'' + d.id + '\')" class="text-rose-500 dark:text-rose-455 hover:underline"><i data-lucide="trash-2" class="h-4.5 w-4.5 inline"></i></button>'
       + '</td></tr>';
@@ -2336,6 +2354,7 @@ function renderReturns() {
       + '<td class="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold">' + r.returnedQty + '</td>'
       + '<td class="p-3.5 text-slate-500 dark:text-slate-400 text-xs max-w-xs truncate" title="' + r.notes + '">' + r.notes + '</td>'
       + '<td class="p-3.5 text-center flex items-center justify-center gap-2">'
+      + '<button onclick="viewReturn(\'' + r.txnNo + '\')" class="text-indigo-500 dark:text-indigo-400 hover:underline" title="View Details"><i data-lucide="eye" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="editReturn(\'' + r.txnNo + '\')" class="text-brand-500 hover:text-brand-700 dark:hover:text-brand-300" title="Edit Return"><i data-lucide="edit-2" class="h-4.5 w-4.5 inline"></i></button>'
       + '<button onclick="delReturn(\'' + r.txnNo + '\')" class="text-rose-500 dark:text-rose-455 hover:text-rose-700 dark:hover:text-rose-300" title="Delete Return"><i data-lucide="trash-2" class="h-4.5 w-4.5 inline"></i></button>'
       + '</td></tr>';
@@ -4952,8 +4971,6 @@ function onReturnCustomerChange() {
   if (!pending.length) {
     tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-bold">This customer has no pending cylinder returns</td></tr>';
     return;
-  }
-  
   tbody.innerHTML = pending.map(function(t, i) {
     return '<tr class="r-item-row" data-product-id="' + t.productId + '" data-product-name="' + t.productName + '">'
       + '<td class="p-2 font-bold text-slate-700 dark:text-slate-205">' + t.productName + '</td>'
@@ -4962,6 +4979,263 @@ function onReturnCustomerChange() {
       + '<input type="number" min="0" max="' + t.pendingQty + '" class="r-item-qty rounded p-1 w-24 text-center text-xs" placeholder="0">'
       + '</td></tr>';
   }).join('');
+}
+
+// --- Detailed View Functions ---
+function openDetailViewModal(htmlContent) {
+  var contentDiv = g('view-detail-content');
+  if (contentDiv) {
+    contentDiv.innerHTML = htmlContent;
+  }
+  openModal('modal-view-detail');
+  lucide.createIcons();
+}
+
+function viewParty(id) {
+  var p = DB.parties.find(function(x) { return x.id === id; });
+  if (!p) { toast('Party not found', 'error'); return; }
+
+  var sales = DB.sales.filter(function(s) { return s.customerName === p.name; });
+  var tracker = DB.tracker.filter(function(t) { return t.customerName === p.name; });
+
+  var uniqueInvs = {};
+  sales.forEach(function(s) {
+    uniqueInvs[s.receiptNo] = { invoiceTotal: s.invoiceTotal, totalPaid: s.totalPaid, balanceDue: s.balanceDue };
+  });
+
+  var totBilled = 0, totPaid = 0, totDue = 0;
+  Object.keys(uniqueInvs).forEach(function(k) {
+    totBilled += uniqueInvs[k].invoiceTotal;
+    totPaid += uniqueInvs[k].totalPaid;
+    totDue += uniqueInvs[k].balanceDue;
+  });
+
+  var pendingEmptyList = tracker.map(function(t) {
+    return '<li>' + t.productName + ': <b class="text-rose-500">' + t.pendingQty + ' pending</b> (Given: ' + t.givenQty + ', Returned: ' + t.returnedQty + ')</li>';
+  }).join('') || '<li class="text-slate-500">No cylinder transactions logged yet</li>';
+
+  var html = 
+    '<div class="space-y-4">' +
+    '  <div class="border-b pb-3 border-slate-200 dark:border-slate-800">' +
+    '    <span class="text-xs bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">' + p.id + '</span>' +
+    '    <h2 class="text-xl font-extrabold text-slate-850 dark:text-white mt-1.5">' + p.name + '</h2>' +
+    '  </div>' +
+    '  <div class="grid grid-cols-2 gap-4 text-sm">' +
+    '    <div><p class="text-xs text-slate-500 font-bold">Mobile Number</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + p.mobile + '</p></div>' +
+    '    <div><p class="text-xs text-slate-500 font-bold">Email Address</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + (p.email || '—') + '</p></div>' +
+    '    <div class="col-span-2"><p class="text-xs text-slate-500 font-bold">Billing Address</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + p.address + '</p></div>' +
+    '  </div>' +
+    '  <div class="border-t pt-4 border-slate-200 dark:border-slate-800">' +
+    '    <h4 class="text-xs font-bold text-slate-555 uppercase mb-3"><i data-lucide="wallet" class="h-4 w-4 inline mr-1"></i> Account Financial Statement</h4>' +
+    '    <div class="grid grid-cols-3 gap-3 text-center text-xs">' +
+    '      <div class="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg"><span class="block text-slate-550">Total Billed</span><b class="text-sm text-slate-850 dark:text-white">' + fmt(totBilled) + '</b></div>' +
+    '      <div class="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg"><span class="block text-slate-550">Total Paid</span><b class="text-sm text-emerald-600 dark:text-emerald-450">' + fmt(totPaid) + '</b></div>' +
+    '      <div class="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg"><span class="block text-slate-550">Outstanding Dues</span><b class="text-sm text-rose-500">' + fmt(totDue) + '</b></div>' +
+    '    </div>' +
+    '  </div>' +
+    '  <div class="border-t pt-4 border-slate-200 dark:border-slate-800">' +
+    '    <h4 class="text-xs font-bold text-slate-555 uppercase mb-2"><i data-lucide="package" class="h-4 w-4 inline mr-1"></i> Cylinder Inventory Status</h4>' +
+    '    <ul class="list-disc pl-5 text-xs space-y-1.5 text-slate-700 dark:text-slate-350">' + pendingEmptyList + '</ul>' +
+    '  </div>' +
+    '</div>';
+
+  openDetailViewModal(html);
+}
+
+function viewDriver(id) {
+  var d = DB.drivers.find(function(x) { return x.id === id; });
+  if (!d) { toast('Driver not found', 'error'); return; }
+
+  var deliveries = DB.sales.filter(function(s) { return s.driver === d.name; });
+  var uniqueDeliveries = {};
+  deliveries.forEach(function(s) { uniqueDeliveries[s.receiptNo] = true; });
+  var count = Object.keys(uniqueDeliveries).length;
+
+  var html = 
+    '<div class="space-y-4">' +
+    '  <div class="border-b pb-3 border-slate-200 dark:border-slate-800">' +
+    '    <span class="text-xs bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">' + d.id + '</span>' +
+    '    <h2 class="text-xl font-extrabold text-slate-850 dark:text-white mt-1.5">' + d.name + '</h2>' +
+    '  </div>' +
+    '  <div class="grid grid-cols-2 gap-4 text-sm">' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Mobile Number</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + d.mobile + '</p></div>' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Vehicle Number</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + d.vehicleNo + '</p></div>' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Total Deliveries Assigned</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + count + ' orders</p></div>' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Created Date</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + (d.createdAt || '—') + '</p></div>' +
+    '  </div>' +
+    '</div>';
+
+  openDetailViewModal(html);
+}
+
+function viewProduct(id) {
+  var p = DB.products.find(function(x) { return x.id === id; });
+  if (!p) { toast('Product not found', 'error'); return; }
+
+  var histList = (DB.priceHistory || []).filter(function(h) { return h.productId === p.id; });
+  var histHtml = histList.map(function(h) {
+    return '<tr class="border-b border-slate-100 dark:border-slate-850 text-xs">' +
+      '<td class="p-2">' + h.changedAt + '</td>' +
+      '<td class="p-2 text-rose-500">' + fmt(h.oldRate) + '</td>' +
+      '<td class="p-2 text-emerald-600 dark:text-emerald-450 font-bold">' + fmt(h.newRate) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var tableHtml = histList.length
+    ? '<table class="w-full text-left mt-2">' +
+      '  <thead class="bg-slate-50 dark:bg-slate-900 font-bold text-slate-555 text-[10px] uppercase">' +
+      '    <tr><th class="p-2">Date</th><th class="p-2">Old Rate</th><th class="p-2">New Rate</th></tr>' +
+      '  </thead>' +
+      '  <tbody>' + histHtml + '</tbody>' +
+      '</table>'
+    : '<p class="text-xs text-slate-550 italic mt-2">No rate modifications logged yet.</p>';
+
+  var html = 
+    '<div class="space-y-4">' +
+    '  <div class="border-b pb-3 border-slate-200 dark:border-slate-800">' +
+    '    <span class="text-xs bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">' + p.id + '</span>' +
+    '    <h2 class="text-xl font-extrabold text-slate-850 dark:text-white mt-1.5">' + p.name + '</h2>' +
+    '  </div>' +
+    '  <div class="grid grid-cols-2 gap-4 text-sm">' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Standard Refill Rate</p><p class="font-extrabold text-brand-600 text-lg">' + fmt(p.refillRate) + '</p></div>' +
+    '    <div><p class="text-xs text-slate-550 font-bold">Created Date</p><p class="font-semibold text-slate-700 dark:text-slate-200">' + (p.createdAt || '—') + '</p></div>' +
+    '  </div>' +
+    '  <div class="border-t pt-4 border-slate-200 dark:border-slate-800">' +
+    '    <h4 class="text-xs font-bold text-slate-555 uppercase"><i data-lucide="history" class="h-4 w-4 inline mr-1"></i> Rate Updates log</h4>' +
+    '    ' + tableHtml +
+    '  </div>' +
+    '</div>';
+
+  openDetailViewModal(html);
+}
+
+function viewSale(receiptNo, isDraft = false) {
+  var items = isDraft 
+    ? DB.drafts.filter(function(x) { return x.receiptNo === receiptNo; })
+    : DB.sales.filter(function(x) { return x.receiptNo === receiptNo; });
+    
+  if (!items.length) { toast('Invoice details not found!', 'error'); return; }
+  var s = items[0];
+
+  var rowsHtml = items.map(function(item) {
+    var totalQty = item.totalQty || (item.cashQty + item.onlineQty);
+    var total = (totalQty * item.refillRate) - item.discount;
+    return '<tr class="border-b border-slate-100 dark:border-slate-850 text-xs">' +
+      '<td class="p-2.5 font-bold">' + item.productName + '</td>' +
+      '<td class="p-2.5 text-center">' + totalQty + ' (' + item.cashQty + 'C/' + item.onlineQty + 'O)</td>' +
+      '<td class="p-2.5 text-right">' + fmt(item.refillRate) + '</td>' +
+      '<td class="p-2.5 text-right text-rose-500">-' + fmt(item.discount) + '</td>' +
+      '<td class="p-2.5 text-right font-bold">' + fmt(total) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var html = 
+    '<div class="space-y-4">' +
+    '  <div class="border-b pb-3 border-slate-200 dark:border-slate-800 flex justify-between items-start">' +
+    '    <div>' +
+    '      <span class="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">' + (isDraft ? 'Draft Invoice' : 'Receipt: REC-' + s.receiptNo) + '</span>' +
+    '      <h2 class="text-base font-extrabold text-slate-850 dark:text-white mt-1.5">' + s.customerName + '</h2>' +
+    '      <p class="text-xs text-slate-500">Mobile: ' + s.mobile + ' | Address: ' + s.address + '</p>' +
+    '    </div>' +
+    '    <div class="text-right">' +
+    '      <p class="text-xs text-slate-550 font-bold">Transaction Date</p>' +
+    '      <p class="font-semibold text-slate-700 dark:text-slate-200">' + s.date + '</p>' +
+    '    </div>' +
+    '  </div>' +
+    '  ' +
+    '  <div>' +
+    '    <h4 class="text-xs font-bold text-slate-555 uppercase mb-2">Refill Purchase items:</h4>' +
+    '    <table class="w-full text-left text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">' +
+    '      <thead class="bg-slate-50 dark:bg-slate-900 font-bold text-slate-555">' +
+    '        <tr>' +
+    '          <th class="p-2.5">Item Name</th>' +
+    '          <th class="p-2.5 text-center">Quantity</th>' +
+    '          <th class="p-2.5 text-right">Refill Rate</th>' +
+    '          <th class="p-2.5 text-right">Discount</th>' +
+    '          <th class="p-2.5 text-right">Total</th>' +
+    '        </tr>' +
+    '      </thead>' +
+    '      <tbody>' + rowsHtml + '</tbody>' +
+    '    </table>' +
+    '  </div>' +
+    '  ' +
+    '  <div class="grid grid-cols-2 gap-4 text-xs border-t pt-4 border-slate-200 dark:border-slate-800">' +
+    '    <div>' +
+    '      <p class="text-xs text-slate-550 font-bold">Delivery assigned to Driver</p>' +
+    '      <p class="font-semibold text-slate-700 dark:text-slate-200">' + (s.driver || '— (No delivery driver)') + '</p>' +
+    '      <p class="text-xs text-slate-550 font-bold mt-2.5">Online consumer Nos / Badge details</p>' +
+    '      <p class="font-semibold text-slate-700 dark:text-slate-200 text-[10px]">' + (s.consumerNos || '—') + '</p>' +
+    '      <p class="text-xs text-slate-550 font-bold mt-2.5">Denominations Calculated</p>' +
+    '      <p class="font-semibold text-slate-700 dark:text-slate-200">' + (s.denominations || '—') + '</p>' +
+    '    </div>' +
+    '    <div class="space-y-1.5 text-right font-medium">' +
+    '      <div class="flex justify-between"><span>Grand Total:</span><b class="text-slate-850 dark:text-white">' + fmt(s.invoiceTotal) + '</b></div>' +
+    '      <div class="flex justify-between text-emerald-600 dark:text-emerald-450"><span>Cash Paid Today:</span><b>' + fmt(s.cashPaid) + '</b></div>' +
+    '      <div class="flex justify-between text-indigo-500"><span>Online Paid Today:</span><b>' + fmt(s.onlinePaid) + '</b></div>' +
+    '      <div class="flex justify-between text-slate-600 dark:text-slate-350"><span>Total Payments:</span><b>' + fmt(s.totalPaid) + '</b></div>' +
+    '      <div class="flex justify-between text-rose-500 font-extrabold border-t pt-1.5 border-dashed border-slate-300 dark:border-slate-700 text-sm"><span>Outstanding Balance:</span><b>' + fmt(s.balanceDue) + '</b></div>' +
+    '    </div>' +
+    '  </div>' +
+    '  ' +
+    '  <div class="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg text-xs">' +
+    '    <p class="font-bold text-slate-550 mb-0.5">Remarks / Internal notes</p>' +
+    '    <p class="italic text-slate-600 dark:text-slate-400">' + (s.notes || 'No remarks recorded for this transaction.') + '</p>' +
+    '  </div>' +
+    '</div>';
+
+  openDetailViewModal(html);
+}
+
+function viewDraft(receiptNo) {
+  viewSale(receiptNo, true);
+}
+
+function viewReturn(txnNo) {
+  var rList = DB.returns.filter(function(x) { return x.txnNo === txnNo; });
+  if (!rList.length) { toast('Return txn not found', 'error'); return; }
+  var r = rList[0];
+
+  var itemsHtml = rList.map(function(item) {
+    return '<tr class="border-b border-slate-100 dark:border-slate-850 text-xs">' +
+      '<td class="p-2.5 font-bold">' + item.productName + '</td>' +
+      '<td class="p-2.5 text-center font-extrabold text-emerald-600 dark:text-emerald-450">' + item.returnedQty + ' cylinders</td>' +
+      '</tr>';
+  }).join('');
+
+  var html = 
+    '<div class="space-y-4">' +
+    '  <div class="border-b pb-3 border-slate-200 dark:border-slate-800 flex justify-between items-start">' +
+    '    <div>' +
+    '      <span class="text-xs bg-indigo-500/10 text-indigo-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Return: ' + r.txnNo + '</span>' +
+    '      <h2 class="text-base font-extrabold text-slate-850 dark:text-white mt-1.5">' + r.customerName + '</h2>' +
+    '      <p class="text-xs text-slate-500">Mobile: ' + r.mobile + '</p>' +
+    '    </div>' +
+    '    <div class="text-right">' +
+    '      <p class="text-xs text-slate-550 font-bold">Transaction Date</p>' +
+    '      <p class="font-semibold text-slate-700 dark:text-slate-200">' + r.date + '</p>' +
+    '    </div>' +
+    '  </div>' +
+    '  ' +
+    '  <div>' +
+    '    <h4 class="text-xs font-bold text-slate-555 uppercase mb-2">Returned Cylinder items list:</h4>' +
+    '    <table class="w-full text-left text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">' +
+    '      <thead class="bg-slate-50 dark:bg-slate-900 font-bold text-slate-555">' +
+    '        <tr>' +
+    '          <th class="p-2.5">Item Name</th>' +
+    '          <th class="p-2.5 text-center">Returned Qty</th>' +
+    '        </tr>' +
+    '      </thead>' +
+    '      <tbody>' + itemsHtml + '</tbody>' +
+    '    </table>' +
+    '  </div>' +
+    '  ' +
+    '  <div class="bg-slate-50 dark:bg-slate-900 border p-3 rounded-lg text-xs">' +
+    '    <p class="font-bold text-slate-550 mb-0.5">Remarks / Notes</p>' +
+    '    <p class="italic text-slate-600 dark:text-slate-400">' + (r.notes || 'No notes recorded for this return.') + '</p>' +
+    '  </div>' +
+    '</div>';
+
+  openDetailViewModal(html);
 }
 
 function editReturn(txnNo) {
@@ -5736,7 +6010,8 @@ function showActionsDropdown(e, ref, type) {
   
   var html = '';
   if (type === 'sale') {
-    html += '<button onclick="showQuickView(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
+    html += '<button onclick="viewSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
+          + '<button onclick="showQuickView(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
           + '<button onclick="editSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Invoice</button>'
           + '<button onclick="printInvoice(\'' + ref + '\', false)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="printer" class="h-3.5 w-3.5 text-slate-500"></i> Print Invoice</button>'
           + '<button onclick="printPaymentReceipt(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="receipt" class="h-3.5 w-3.5 text-emerald-500"></i> Print Payment Slip</button>'
@@ -5744,13 +6019,15 @@ function showActionsDropdown(e, ref, type) {
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Invoice</button>';
   } else if (type === 'draft') {
-    html += '<button onclick="showQuickView(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
+    html += '<button onclick="viewDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
+          + '<button onclick="showQuickView(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
           + '<button onclick="resumeDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="play" class="h-3.5 w-3.5 text-blue-500"></i> Resume Draft</button>'
           + '<button onclick="printInvoice(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="printer" class="h-3.5 w-3.5 text-slate-500"></i> Print Draft</button>'
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Draft</button>';
   } else if (type === 'product') {
-    html += '<button onclick="editProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Product</button>'
+    html += '<button onclick="viewProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
+          + '<button onclick="editProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Product</button>'
           + '<button onclick="openProductPriceHistory(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="history" class="h-3.5 w-3.5 text-indigo-500"></i> Price History</button>'
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Product</button>';
