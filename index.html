@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIC Billing & Inventory Software</title>
+  <title>Billing Software</title>
+
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,11 +25,9 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-icon">
-          <i class="fas fa-cubes"></i>
-        </div>
+        <i class="fas fa-warehouse"></i>
         <div class="brand-text">
-          <h2>AIC Billing</h2>
+          <h2>Billing Software</h2>
           <span>Firebase Edition</span>
         </div>
       </div>
@@ -38,50 +35,56 @@
       <ul class="nav-list">
         <li class="nav-item active">
           <a href="#dashboard" data-page="dashboard">
-            <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
-            Dashboard
+            <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+            <span>Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="#inventory" data-page="inventory">
-            <span class="nav-icon"><i class="fas fa-boxes-stacked"></i></span>
-            Inventory
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#customers" data-page="customers">
-            <span class="nav-icon"><i class="fas fa-users"></i></span>
-            Customers
+            <span class="nav-icon"><i class="fas fa-boxes"></i></span>
+            <span>Inventory</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="#suppliers" data-page="suppliers">
-            <span class="nav-icon"><i class="fas fa-truck-field"></i></span>
-            Suppliers
+            <span class="nav-icon"><i class="fas fa-truck-loading"></i></span>
+            <span>Suppliers</span>
           </a>
         </li>
         <li class="nav-item">
-          <a href="#sales" data-page="sales">
-            <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-            Sales Orders
+          <a href="#customers" data-page="customers">
+            <span class="nav-icon"><i class="fas fa-user-friends"></i></span>
+            <span>Customers</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="#purchases" data-page="purchases">
-            <span class="nav-icon"><i class="fas fa-cart-shopping"></i></span>
-            Purchase Orders
+            <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+            <span>Purchases</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#sales" data-page="sales">
+            <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+            <span>Sales</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="#receipts" data-page="receipts">
             <span class="nav-icon"><i class="fas fa-receipt"></i></span>
-            Receipts
+            <span>Receipts</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="#payments" data-page="payments">
-            <span class="nav-icon"><i class="fas fa-money-bill-transfer"></i></span>
-            Payments
+            <span class="nav-icon"><i class="fas fa-credit-card"></i></span>
+            <span>Payments</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#reports" data-page="reports">
+            <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+            <span>Reports</span>
           </a>
         </li>
       </ul>
@@ -89,14 +92,14 @@
 
     <!-- Main Content Area -->
     <main class="main-wrapper">
-      <!-- Top Header -->
+      <!-- Top Bar -->
       <header class="top-header">
         <div class="page-title">
-          <h1>Enterprise Billing & Inventory Management</h1>
+          <h1>Billing & Inventory Management</h1>
         </div>
         <div class="header-actions">
           <div class="badge-status">
-            <span class="status-dot"></span> Firebase Live Connected
+            <span class="status-dot"></span> Firebase Live
           </div>
         </div>
       </header>
