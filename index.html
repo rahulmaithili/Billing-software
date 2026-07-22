@@ -9108,9 +9108,9 @@ function triggerGoogleDriveBackup() {
         localStorage.setItem('lastBackup', now);
         var lbt = g('last-backup-time');
         if (lbt) lbt.textContent = 'Last backup: ' + now;
-        toast('✅ Backup successful! Saved to Google Drive.', 'success');
+        toast('✅ Backup successful! Saved to local downloads.', 'success');
         // Log to audit
-        logAuditAction('BACKUP', 'Google Drive backup created', 'System');
+        logAuditAction('BACKUP', 'Local database backup created', 'System');
       } else {
         toast('Backup failed: ' + ((r && r.error) || 'Unknown error'), 'error');
       }

@@ -361,6 +361,37 @@
         return { ok: true };
       }
 
+      case 'apiBackupToGoogleDrive': {
+        const allData = {
+          company: db.getCompanyProfile(),
+          products: db.getProducts(),
+          drivers: db.getDrivers(),
+          sales: db.getSales(),
+          drafts: db.getDrafts(),
+          returns: db.getReturns(),
+          parties: db.getParties(),
+          priceHistory: db.getPriceHistory(),
+          users: db.getUsers(),
+          backupTimestamp: new Date().toISOString()
+        };
+        try {
+          const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const formattedDate = new Date().toISOString().slice(0, 10);
+          a.download = `ShivShaktiHPGas_Backup_${formattedDate}_${Date.now()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          return { ok: true };
+        } catch (err) {
+          console.error("Backup file download failed:", err);
+          return { ok: false, error: err.message };
+        }
+      }
+
       default:
         console.warn(`[GoogleScriptPolyfill] Function ${funcName} not explicitly handled.`);
         return { ok: false, error: `Function ${funcName} not supported` };
