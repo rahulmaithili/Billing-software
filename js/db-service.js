@@ -73,6 +73,9 @@ class DBService {
             this.saveData(storageKeys[col], items);
           }
           console.log(`Firestore Sync: Loaded data for ${col}`);
+        } else {
+          this.saveData(storageKeys[col], col === 'company' ? {} : []);
+          console.log(`Firestore Sync: Cleared local data for empty collection ${col}`);
         }
       }
 
