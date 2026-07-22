@@ -375,7 +375,6 @@
           backupTimestamp: new Date().toISOString()
         };
         
-        // 1. Trigger local browser JSON download (Instant Fallback)
         try {
           const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
@@ -387,33 +386,10 @@
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-        } catch (err) {
-          console.warn("Local backup download failed:", err);
-        }
-
-        // 2. Dispatch payload to Google Apps Script Web App for Google Drive storage
-        const webAppId = "1e210awDMZAQksady-qs1utUlJ0_wYanp-iC40vmEOuXZT2NDb8288Qcd";
-        const webAppUrl = `https://script.google.com/macros/s/${webAppId}/exec`;
-        
-        try {
-          // Sending request using 'no-cors' mode so the browser successfully dispatches 
-          // the payload to Google's server without triggering CORS validation blocks.
-          await fetch(webAppUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              action: 'backup',
-              data: allData,
-              timestamp: new Date().toISOString()
-            })
-          });
           return { ok: true };
         } catch (err) {
-          console.error("Google Drive cloud backup dispatch failed:", err);
-          return { ok: false, error: "Cloud backup error: " + err.message };
+          console.error("Local backup download failed:", err);
+          return { ok: false, error: err.message };
         }
       }
 
