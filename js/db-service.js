@@ -1,6 +1,5 @@
 /**
- * Database Service Layer
- * Supports both Firebase Firestore and Local Storage / Mock DB Mode for instant preview.
+ * Database Service Layer with Live Firebase Firestore Connection & Local Cache Sync
  */
 
 const INITIAL_INVENTORY = [
@@ -49,41 +48,56 @@ const INITIAL_PAYMENTS = [
 
 class DBService {
   constructor() {
+    this.firestore = null;
+    this.initFirebase();
     this.initLocalStorage();
   }
 
-  initLocalStorage() {
-    if (!localStorage.getItem('app_inventory')) {
-      localStorage.setItem('app_inventory', JSON.stringify(INITIAL_INVENTORY));
-    }
-    if (!localStorage.getItem('app_customers')) {
-      localStorage.setItem('app_customers', JSON.stringify(INITIAL_CUSTOMERS));
-    }
-    if (!localStorage.getItem('app_suppliers')) {
-      localStorage.setItem('app_suppliers', JSON.stringify(INITIAL_SUPPLIERS));
-    }
-    if (!localStorage.getItem('app_sales')) {
-      localStorage.setItem('app_sales', JSON.stringify(INITIAL_SALES));
-    }
-    if (!localStorage.getItem('app_purchases')) {
-      localStorage.setItem('app_purchases', JSON.stringify(INITIAL_PURCHASES));
-    }
-    if (!localStorage.getItem('app_receipts')) {
-      localStorage.setItem('app_receipts', JSON.stringify(INITIAL_RECEIPTS));
-    }
-    if (!localStorage.getItem('app_payments')) {
-      localStorage.setItem('app_payments', JSON.stringify(INITIAL_PAYMENTS));
+  initFirebase() {
+    try {
+      if (window.firebase && window.firebaseConfig) {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(window.firebaseConfig);
+        }
+        this.firestore = firebase.firestore();
+        console.log("Firebase Firestore initialized successfully.");
+      }
+    } catch (err) {
+      console.warn("Firebase fallback mode active:", err);
     }
   }
 
-  // Generic getter
+  initLocalStorage() {
+    if (!localStorage.getItem('app_inventory')) localStorage.setItem('app_inventory', JSON.stringify(INITIAL_INVENTORY));
+    if (!localStorage.getItem('app_customers')) localStorage.setItem('app_customers', JSON.stringify(INITIAL_CUSTOMERS));
+    if (!localStorage.getItem('app_suppliers')) localStorage.setItem('app_suppliers', JSON.stringify(INITIAL_SUPPLIERS));
+    if (!localStorage.getItem('app_sales')) localStorage.setItem('app_sales', JSON.stringify(INITIAL_SALES));
+    if (!localStorage.getItem('app_purchases')) localStorage.setItem('app_purchases', JSON.stringify(INITIAL_PURCHASES));
+    if (!localStorage.getItem('app_receipts')) localStorage.setItem('app_receipts', JSON.stringify(INITIAL_RECEIPTS));
+    if (!localStorage.getItem('app_payments')) localStorage.setItem('app_payments', JSON.stringify(INITIAL_PAYMENTS));
+  }
+
+  // --- Local Cache Helpers ---
   getData(key) {
     return JSON.parse(localStorage.getItem(key) || '[]');
   }
-
-  // Generic setter
   saveData(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  // --- Firestore Collection Sync ---
+  syncToFirestore(collectionName, docId, data) {
+    if (this.firestore) {
+      this.firestore.collection(collectionName).doc(docId).set(data, { merge: true })
+        .catch(err => console.warn(`Firestore sync error on ${collectionName}:`, err));
+    }
+  }
+
+  deleteFromFirestore(collectionName, docId) {
+    if (this.firestore) {
+      this.firestore.collection(collectionName).doc(docId).delete()
+        .catch(err => console.warn(`Firestore delete error on ${collectionName}:`, err));
+    }
   }
 
   // --- Inventory ---
@@ -97,12 +111,14 @@ class DBService {
     item.reorderRequired = item.remainingQty < (Number(item.reorderLevel) || 0);
     list.unshift(item);
     this.saveData('app_inventory', list);
+    this.syncToFirestore('inventory', item.id, item);
     return item;
   }
   deleteInventoryItem(id) {
     let list = this.getInventory();
     list = list.filter(item => item.id !== id);
     this.saveData('app_inventory', list);
+    this.deleteFromFirestore('inventory', id);
   }
 
   // --- Customers ---
@@ -113,6 +129,7 @@ class DBService {
     cust.receivable = Number(cust.receivable || 0);
     list.unshift(cust);
     this.saveData('app_customers', list);
+    this.syncToFirestore('customers', cust.id, cust);
     return cust;
   }
 
@@ -124,6 +141,7 @@ class DBService {
     sup.payable = Number(sup.payable || 0);
     list.unshift(sup);
     this.saveData('app_suppliers', list);
+    this.syncToFirestore('suppliers', sup.id, sup);
     return sup;
   }
 
@@ -135,6 +153,7 @@ class DBService {
     sale.totalSalesPrice = Number(sale.qty || 0) * Number(sale.unitPrice || 0);
     list.unshift(sale);
     this.saveData('app_sales', list);
+    this.syncToFirestore('sales', sale.id, sale);
     return sale;
   }
 
@@ -146,6 +165,7 @@ class DBService {
     purch.totalPurchasePrice = Number(purch.qty || 0) * Number(purch.unitPrice || 0);
     list.unshift(purch);
     this.saveData('app_purchases', list);
+    this.syncToFirestore('purchases', purch.id, purch);
     return purch;
   }
 
@@ -156,6 +176,7 @@ class DBService {
     rec.id = rec.id || "REC-" + Math.floor(100 + Math.random() * 900);
     list.unshift(rec);
     this.saveData('app_receipts', list);
+    this.syncToFirestore('receipts', rec.id, rec);
     return rec;
   }
 
@@ -166,6 +187,7 @@ class DBService {
     pay.id = pay.id || "PAY-" + Math.floor(100 + Math.random() * 900);
     list.unshift(pay);
     this.saveData('app_payments', list);
+    this.syncToFirestore('payments', pay.id, pay);
     return pay;
   }
 
@@ -183,7 +205,6 @@ class DBService {
     const totalReceivable = customers.reduce((sum, r) => sum + Number(r.receivable || 0), 0);
     const totalPayable = suppliers.reduce((sum, r) => sum + Number(r.payable || 0), 0);
 
-    // Location & Top items
     const salesByCity = {};
     sales.forEach(r => {
       const city = r.city || 'Unknown';

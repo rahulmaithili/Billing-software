@@ -1,22 +1,20 @@
 /**
  * Firebase Setup & Configuration
- * 
- * Replace the values below with your Firebase Project config keys from the Firebase Console:
- * Project Settings -> General -> Your Apps -> Web App -> Firebase SDK snippet.
+ * Project: billing-software-90d7c
  */
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDKfpmqfinHp5zxPqZtNpsureFA9wAM-P8",
+  authDomain: "billing-software-90d7c.firebaseapp.com",
+  projectId: "billing-software-90d7c",
+  storageBucket: "billing-software-90d7c.firebasestorage.app",
+  messagingSenderId: "6798483772",
+  appId: "1:6798483772:web:1d069356ae4ec2565a7e39"
 };
 
 // Check if user has updated placeholder config
 window.isFirebaseConfigured = function() {
-  return firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
+  return true;
 };
 
 // Export config for DB service
