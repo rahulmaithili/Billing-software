@@ -475,6 +475,62 @@ class DBService {
     this.saveData('app_users', list);
     this.deleteFromFirestore('users', username);
   }
+
+  async importBackup(backupData) {
+    if (!backupData || typeof backupData !== 'object') throw new Error("Invalid backup format");
+    
+    // Clear existing Firestore collections before uploading backup
+    const collectionsToClear = ['company', 'products', 'drivers', 'sales', 'drafts', 'returns', 'parties', 'users'];
+    if (this.firestore) {
+      for (const col of collectionsToClear) {
+        const snap = await this.firestore.collection(col).get();
+        const deletePromises = [];
+        snap.forEach(doc => deletePromises.push(doc.ref.delete()));
+        await Promise.all(deletePromises);
+      }
+    }
+
+    // Overwrite local caches
+    if (backupData.company) this.saveData('app_company', backupData.company);
+    if (backupData.products) this.saveData('app_products', backupData.products);
+    if (backupData.drivers) this.saveData('app_drivers', backupData.drivers);
+    if (backupData.sales) this.saveData('app_sales', backupData.sales);
+    if (backupData.drafts) this.saveData('app_drafts', backupData.drafts);
+    if (backupData.returns) this.saveData('app_returns', backupData.returns);
+    if (backupData.parties) this.saveData('app_parties', backupData.parties);
+    if (backupData.priceHistory) this.saveData('app_price_history', backupData.priceHistory);
+    if (backupData.users) this.saveData('app_users', backupData.users);
+
+    // Upload backup documents to Firestore
+    if (this.firestore) {
+      if (backupData.company) {
+        const profile = backupData.company.profile || backupData.company;
+        await this.syncToFirestore('company', 'profile', profile);
+      }
+      
+      const arrayCollections = {
+        products: backupData.products,
+        drivers: backupData.drivers,
+        sales: backupData.sales,
+        drafts: backupData.drafts,
+        returns: backupData.returns,
+        parties: backupData.parties,
+        users: backupData.users
+      };
+
+      for (const [col, list] of Object.entries(arrayCollections)) {
+        if (Array.isArray(list)) {
+          for (const item of list) {
+            const docId = item.id || item.receiptNo || item.txnNo || item.username;
+            if (docId) {
+              await this.syncToFirestore(col, docId, item);
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
 }
 
 window.dbService = new DBService();

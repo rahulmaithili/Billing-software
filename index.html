@@ -1379,15 +1379,30 @@
             <!-- Backup Section -->
             <div class="pt-4 border-t border-slate-200 dark:border-slate-800 mt-2">
               <h4 class="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] border-l-4 border-emerald-500 pl-2 mb-3">Backup & Data</h4>
-              <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <p class="font-bold text-slate-855 dark:text-white text-sm">Backup to Google Drive</p>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Creates a timestamped copy of the spreadsheet in your Google Drive. Safe & automated.</p>
-                  <p class="text-[10px] text-slate-400 mt-1" id="last-backup-time">Last backup: Not backed up yet</p>
+              <div class="space-y-3">
+                <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <p class="font-bold text-slate-855 dark:text-white text-sm">Backup Database</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Downloads a backup file to your computer and automatically dispatches a copy to your Google Drive.</p>
+                    <p class="text-[10px] text-slate-400 mt-1" id="last-backup-time">Last backup: Not backed up yet</p>
+                  </div>
+                  <button onclick="triggerGoogleDriveBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm flex items-center gap-2 shrink-0 shadow-md">
+                    <i data-lucide="cloud-upload" class="h-4 w-4"></i> Backup Now
+                  </button>
                 </div>
-                <button onclick="triggerGoogleDriveBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm flex items-center gap-2 shrink-0 shadow-md">
-                  <i data-lucide="cloud-upload" class="h-4 w-4"></i> Backup Now
-                </button>
+                
+                <div class="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <p class="font-bold text-slate-855 dark:text-white text-sm">Import / Restore Backup</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Restore all settings, directories, and transaction histories from a previously downloaded JSON backup file.</p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <input type="file" id="import-backup-file" accept=".json" class="hidden" onchange="triggerImportBackup(event)">
+                    <button onclick="g('import-backup-file').click()" class="bg-indigo-600 hover:bg-indigo-750 text-white font-bold py-2.5 px-5 rounded-lg text-sm flex items-center gap-2 shadow-md">
+                      <i data-lucide="upload-cloud" class="h-4 w-4"></i> Choose & Import
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -9120,6 +9135,62 @@ function triggerGoogleDriveBackup() {
       toast('Backup error: ' + e.message, 'error');
     })
     .apiBackupToGoogleDrive();
+}
+
+function triggerImportBackup(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      
+      // Basic structure validation
+      if (!data.products || !data.parties || !data.sales) {
+        throw new Error("Invalid backup file structure. Missing products, parties, or sales data.");
+      }
+      
+      Swal.fire({
+        title: 'Restore Backup?',
+        text: 'Warning: This will overwrite your current Firestore database with the backup data. This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#d1d5db',
+        confirmButtonText: 'Yes, Restore Backup',
+        cancelButtonText: 'Cancel'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Restoring Database...',
+            text: 'Please wait while we upload the backup documents to Firestore...',
+            allowOutsideClick: false,
+            didOpen: function() {
+              Swal.showLoading();
+            }
+          });
+          
+          window.dbService.importBackup(data).then(function() {
+            Swal.fire({
+              title: 'Success!',
+              text: 'Database restored successfully!',
+              icon: 'success',
+              confirmButtonColor: '#4f46e5'
+            }).then(function() {
+              window.location.reload();
+            });
+          }).catch(function(err) {
+            Swal.fire('Error', 'Failed to write to database: ' + err.message, 'error');
+          });
+        }
+      });
+      
+    } catch (err) {
+      Swal.fire('Error', 'Failed to parse backup file: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ════════════════════════════════════════════════════════════════
