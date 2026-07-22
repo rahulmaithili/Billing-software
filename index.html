@@ -6884,68 +6884,128 @@ function printInvoice(receiptNo, isDraft) {
     
   if (!items.length) { toast('Invoice details not found!', 'error'); return; }
   var s = items[0];
-  
+  var cp = DB.company;
+
+  // Retrieve current active template settings dynamically
+  var tpl = { color: '#ea580c', font: 'Outfit', layout: 'standard', showBank: 'yes' };
+  try {
+    var saved = localStorage.getItem('invoiceTemplate');
+    if (saved) tpl = JSON.parse(saved);
+  } catch(e) {}
+
+  var accentColor = tpl.color || '#ea580c';
+  var fontStyle = tpl.font || 'Outfit';
+  var isCompact = tpl.layout === 'compact';
+  var isModern = tpl.layout === 'modern';
+
   var itemsHtml = items.map(function(item) {
     var tQty = item.totalQty || (item.cashQty + item.onlineQty);
     var total = (tQty * item.refillRate) - item.discount;
     var emptiesRtn = item.emptyReturned || 0;
     var emptiesPend = item.pendingEmpty || 0;
-    return '<tr>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px;">' + item.productName + '</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">' + tQty + ' (' + item.cashQty + 'C/' + item.onlineQty + 'O)</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: right;">₹' + item.refillRate.toFixed(2) + '</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: right;">₹' + item.discount.toFixed(2) + '</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: right; font-weight: bold;">₹' + total.toFixed(2) + '</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; color: #16a34a; font-weight: 600;">' + emptiesRtn + '</td>'
-      + '<td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; color: #dc2626; font-weight: 600;">' + emptiesPend + '</td>'
+    return '<tr style="border-bottom: 1px solid #e2e8f0;">'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: left; font-weight: 600; color: #1e293b;">' + item.productName + '</td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: center; color: #334155;">' + tQty + ' <span style="font-size: 10px; color: #64748b;">(' + item.cashQty + 'C/' + item.onlineQty + 'O)</span></td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: right; color: #475569;">₹' + item.refillRate.toFixed(2) + '</td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: right; color: #94a3b8;">₹' + item.discount.toFixed(2) + '</td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: right; font-weight: 700; color: #0f172a;">₹' + total.toFixed(2) + '</td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: center; color: #16a34a; font-weight: 700;">' + emptiesRtn + '</td>'
+      + '<td style="padding: ' + (isCompact ? '6px 8px' : '12px 14px') + '; text-align: center; color: #dc2626; font-weight: 700;">' + emptiesPend + '</td>'
       + '</tr>';
   }).join('');
   
   var container = g('print-container');
-  var titleLabel = isDraft ? 'INVOICE DRAFT (UNFINALIZED)' : 'TAX INVOICE / REFILLS SLIP';
-  var cp = DB.company;
+  var titleLabel = isDraft ? 'INVOICE DRAFT' : 'TAX INVOICE / REFILL SLIP';
   
   var logoHtml = cp.logo 
-    ? '<img src="' + cp.logo + '" style="max-height: 70px; max-width: 140px; margin-right: 15px; border-radius: 4px; object-fit: contain;">' 
+    ? '<img src="' + cp.logo + '" style="max-height: ' + (isCompact ? '50px' : '65px') + '; margin-right: 15px; border-radius: 8px; object-fit: contain;">' 
     : '';
-  
-  container.innerHTML = 
-    '<div style="font-family: \'Outfit\', sans-serif; color: #1e293b; padding: 30px; line-height: 1.5;">' +
-      '<div style="display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; align-items: center;">' +
+
+  // Header options
+  var headerHtml = '';
+  if (isModern) {
+    headerHtml = 
+      '<div style="background: ' + accentColor + '; color: #ffffff; padding: ' + (isCompact ? '15px' : '25px') + '; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">' +
+        '<div style="display: flex; align-items: center;">' +
+          (cp.logo ? '<div style="background: #ffffff; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">' + logoHtml + '</div>' : '') +
+          '<div>' +
+            '<h1 style="margin: 0; font-size: ' + (isCompact ? '18px' : '23px') + '; font-weight: 850; text-transform: uppercase; letter-spacing: 0.5px;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
+            '<p style="margin: 3px 0 0 0; font-size: 11px; opacity: 0.9; font-weight: 600;">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
+            '<p style="margin: 1px 0 0 0; font-size: 10px; opacity: 0.8;">' + (cp.addr1 || '') + ', ' + (cp.addr2 || '') + ', ' + (cp.city || '') + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align: right;">' +
+          '<h2 style="margin: 0; font-size: ' + (isCompact ? '12px' : '14px') + '; font-weight: 800; background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 1px;">' + titleLabel + '</h2>' +
+          '<p style="margin: 6px 0 0 0; font-size: 13px; font-weight: 700;">No: ' + s.receiptNo + '</p>' +
+          '<p style="margin: 1px 0 0 0; font-size: 11px; opacity: 0.8;">Date: ' + s.date + '</p>' +
+        '</div>' +
+      '</div>';
+  } else {
+    headerHtml = 
+      '<div style="display: flex; justify-content: space-between; border-bottom: 3px solid ' + accentColor + '; padding-bottom: 16px; margin-bottom: 20px; align-items: center;">' +
         '<div style="display: flex; align-items: center;">' +
           logoHtml +
           '<div>' +
-            '<h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ea580c; text-transform: uppercase;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
-            '<p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 600; color: #475569;">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
-            '<p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">' + (cp.addr1 || '') + ', ' + (cp.addr2 || '') + ', ' + (cp.city || '') + '</p>' +
+            '<h1 style="margin: 0; font-size: ' + (isCompact ? '20px' : '25px') + '; font-weight: 900; color: #0f172a; text-transform: uppercase;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
+            '<p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 700; color: ' + accentColor + ';">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
+            '<p style="margin: 2px 0 0 0; font-size: 11px; color: #475569;">' + (cp.addr1 || '') + ', ' + (cp.addr2 || '') + ', ' + (cp.city || '') + '</p>' +
             '<p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">Phone: ' + (cp.phone || '') + ' | Email: ' + (cp.email || '') + '</p>' +
           '</div>' +
         '</div>' +
         '<div style="text-align: right;">' +
-          '<h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #64748b;">' + titleLabel + '</h2>' +
-          '<p style="margin: 4px 0 0 0; font-size: 14px; font-weight: 800; color: #ea580c;">Invoice #: ' + s.receiptNo + '</p>' +
-          '<p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">Date: ' + s.date + '</p>' +
+          '<h2 style="margin: 0; font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">' + titleLabel + '</h2>' +
+          '<p style="margin: 4px 0 0 0; font-size: 14px; font-weight: 800; color: ' + accentColor + ';">Invoice #: ' + s.receiptNo + '</p>' +
+          '<p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">Date: ' + s.date + '</p>' +
         '</div>' +
+      '</div>';
+  }
+
+  // Bank & UPI QR Block
+  var bankHtml = '';
+  if (tpl.showBank === 'yes') {
+    bankHtml = 
+      '<div style="width: 48%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 11px; background-color: #f8fafc; margin-top: 15px;">' +
+        '<h5 style="margin: 0 0 6px 0; font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">Bank & UPI Details</h5>' +
+        '<p style="margin: 3px 0; color: #334155;"><b>UPI ID:</b> ' + (cp.upi || 'Not Set') + '</p>' +
+        '<p style="margin: 3px 0; color: #334155;"><b>Agency Phone:</b> ' + (cp.phone || '—') + '</p>' +
+        '<div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">' +
+          '<div style="border: 1px solid #cbd5e1; padding: 3px; background: #fff; border-radius: 4px;">' +
+            '<div style="width: 32px; height: 32px; background: linear-gradient(45deg,#000 25%,transparent 25%,transparent 75%,#000 75%,#000), linear-gradient(45deg,#000 25%,#fff 25%,#fff 75%,#000 75%,#000); background-size: 8px 8px; background-position: 0 0, 4px 4px;"></div>' +
+          '</div>' +
+          '<span style="font-size: 9px; color: #64748b; line-height: 1.2;">Scan with GooglePay, PhonePe, or Paytm app.</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  container.innerHTML = 
+    '<div style="font-family: \'' + fontStyle + '\', sans-serif; color: #1e293b; padding: ' + (isCompact ? '15px' : '30px') + '; line-height: 1.5; background: #ffffff;">' +
+      headerHtml +
+      
+      '<div style="margin-bottom: 20px; display: flex; justify-content: space-between; gap: 15px;">' +
+        '<div style="flex: 1; background-color: #f8fafc; padding: ' + (isCompact ? '10px 12px' : '15px 18px') + '; border-radius: 10px; border: 1px solid #e2e8f0;">' +
+          '<h4 style="margin: 0 0 6px 0; font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Billed Customer</h4>' +
+          '<h3 style="margin: 0; font-size: ' + (isCompact ? '14px' : '16px') + '; font-weight: 850; color: #0f172a;">' + s.customerName + '</h3>' +
+          '<p style="margin: 4px 0 0 0; font-size: 12px; color: #334155;"><b>Phone:</b> ' + s.mobile + '</p>' +
+          '<p style="margin: 1px 0 0 0; font-size: 12px; color: #334155;"><b>Address:</b> ' + s.address + '</p>' +
+        '</div>' +
+        (s.driver ? 
+        '<div style="width: 200px; background-color: #f5f3ff; border: 1px solid #ddd6fe; padding: ' + (isCompact ? '10px' : '15px') + '; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">' +
+          '<span style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #6d28d9; letter-spacing: 0.5px;">Refill Delivery</span>' +
+          '<p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 850; color: #5b21b6;">' + s.driver + '</p>' +
+          '<span style="font-size: 9px; color: #7c3aed; margin-top: 3px;">Assigned Driver</span>' +
+        '</div>' : '') +
       '</div>' +
       
-      '<div style="margin-bottom: 20px; background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">' +
-        '<h4 style="margin: 0 0 6px 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Billed Customer:</h4>' +
-        '<h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #0f172a;">' + s.customerName + '</h3>' +
-        '<p style="margin: 4px 0 0 0; font-size: 13px; color: #334155; font-weight: 500;">Phone: ' + s.mobile + '</p>' +
-        '<p style="margin: 2px 0 0 0; font-size: 13px; color: #334155; font-weight: 500;">Address: ' + s.address + '</p>' +
-        (s.driver ? '<p style="margin: 4px 0 0 0; font-size: 13px; color: #4f46e5; font-weight: bold;">Driver Assigned: ' + s.driver + '</p>' : '') +
-      '</div>' +
-      
-      '<table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">' +
+      '<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: ' + (isCompact ? '11px' : '12px') + ';">' +
         '<thead>' +
-          '<tr style="background-color: #f1f5f9; color: #475569;">' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-weight: 700;">Product Cylinder Size</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 150px; font-weight: 700;">Qty (Cash / Online)</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: right; width: 100px; font-weight: 700;">Rate</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: right; width: 100px; font-weight: 700;">Discount (₹)</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: right; width: 110px; font-weight: 700;">Net Total</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-weight: 700;">Returned Empties</th>' +
-            '<th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; width: 100px; font-weight: 700;">Pending Empties</th>' +
+          '<tr style="background-color: #f1f5f9; color: #475569; border-bottom: 2px solid #cbd5e1;">' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: left; font-weight: 800; text-transform: uppercase;">Product Size</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: center; width: 140px; font-weight: 800; text-transform: uppercase;">Qty (C/O)</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: right; width: 90px; font-weight: 800; text-transform: uppercase;">Rate</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: right; width: 90px; font-weight: 800; text-transform: uppercase;">Discount</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: right; width: 100px; font-weight: 800; text-transform: uppercase;">Total</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: center; width: 80px; font-weight: 800; text-transform: uppercase; color: #16a34a;">Rtn</th>' +
+            '<th style="padding: ' + (isCompact ? '8px' : '12px') + '; text-align: center; width: 80px; font-weight: 800; text-transform: uppercase; color: #dc2626;">Pend</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody>' +
@@ -6953,24 +7013,34 @@ function printInvoice(receiptNo, isDraft) {
         '</tbody>' +
       '</table>' +
       
-      '<div style="display: flex; justify-content: space-between; font-size: 13px;">' +
+      '<div style="display: flex; justify-content: space-between; font-size: 12px; gap: 20px;">' +
         '<div style="width: 50%;">' +
-          '<p style="margin: 0 0 4px 0; font-weight: bold; font-size: 11px; color: #64748b; text-transform: uppercase;">Payment details & Notes:</p>' +
-          '<p style="margin: 0; font-size: 12px; color: #475569; font-style: italic;">' + (s.notes || 'No remarks recorded.') + '</p>' +
-          (s.denominations ? '<p style="margin: 8px 0 0 0; font-size: 11px; color: #64748b;"><b>Denominations:</b> ' + s.denominations + '</p>' : '') +
+          '<p style="margin: 0 0 4px 0; font-weight: 800; font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Remarks & Delivery Notes:</p>' +
+          '<p style="margin: 0; font-size: 11px; color: #475569; font-style: italic; background-color: #fafafa; padding: 8px; border-radius: 6px; border: 1px dashed #e2e8f0;">' + (s.notes || 'No notes recorded.') + '</p>' +
+          (s.denominations ? '<p style="margin: 8px 0 0 0; font-size: 10px; color: #64748b;"><b>Cash Denominations:</b> ' + s.denominations + '</p>' : '') +
           renderPrintConsumerNosHtml(s.consumerNos) +
+          bankHtml +
         '</div>' +
-        '<div style="width: 40%; text-align: right;">' +
-          '<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px;"><span>Invoice Total:</span><span style="font-weight: 600;">' + fmt(s.invoiceTotal) + '</span></div>' +
-          '<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #475569;"><span>Cash Paid:</span><span>' + fmt(s.cashPaid) + '</span></div>' +
-          '<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #475569;"><span>Online Paid:</span><span>' + fmt(s.onlinePaid) + '</span></div>' +
-          '<div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #16a34a; font-weight: 600;"><span>Total Received:</span><span>' + fmt(s.totalPaid) + '</span></div>' +
-          '<div style="display: flex; justify-content: space-between; border-top: 2px solid #cbd5e1; padding-top: 6px; font-weight: 800; font-size: 16px; color: #b91c1c;"><span>Balance Due:</span><span>' + fmt(s.balanceDue) + '</span></div>' +
+        '<div style="width: 40%; text-align: right; display: flex; flex-direction: column; gap: 5px;">' +
+          '<div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569;"><span>Subtotal:</span><span>' + fmt(s.invoiceTotal) + '</span></div>' +
+          '<div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b;"><span>Cash Paid:</span><span>' + fmt(s.cashPaid) + '</span></div>' +
+          '<div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b;"><span>Online Paid:</span><span>' + fmt(s.onlinePaid) + '</span></div>' +
+          '<div style="display: flex; justify-content: space-between; font-size: 13px; color: #16a34a; font-weight: 700; border-top: 1px solid #e2e8f0; padding-top: 5px;"><span>Total Received:</span><span>' + fmt(s.totalPaid) + '</span></div>' +
+          '<div style="display: flex; justify-content: space-between; border-top: 2.5px solid ' + accentColor + '; padding-top: 6px; font-weight: 850; font-size: ' + (isCompact ? '14px' : '16px') + '; color: ' + (s.balanceDue > 0 ? '#b91c1c' : '#16a34a') + ';"><span>Balance Due:</span><span>' + fmt(s.balanceDue) + '</span></div>' +
         '</div>' +
       '</div>' +
       
-      '<div style="margin-top: 60px; border-top: 1px solid #cbd5e1; padding-top: 15px; font-size: 11px; text-align: center; color: #64748b;">' +
-        'Thank you for your business! ' + (cp.terms || '') +
+      '<div style="margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end;">' +
+        '<div style="font-size: 10px; color: #94a3b8; max-width: 50%;">' +
+          'Generated from Shiv Shakti Gas Portal v4.0. Secure cloud system.' +
+        '</div>' +
+        '<div style="text-align: center; border-top: 1px solid #cbd5e1; width: 180px; padding-top: 6px; font-size: 11px; font-weight: bold; color: #475569;">' +
+          'Authorized Signature' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 10px; text-align: center; color: #64748b; font-style: italic;">' +
+        'Thank you for your valued business! ' + (cp.terms || '') +
       '</div>' +
     '</div>';
     
@@ -6981,92 +7051,118 @@ function printPaymentReceipt(receiptNo) {
   var items = DB.sales.filter(function(x) { return x.receiptNo === receiptNo; });
   if (!items.length) { toast('Payment details not found!', 'error'); return; }
   var s = items[0];
-  
   var cp = DB.company;
+
+  // Retrieve template configurations dynamically
+  var tpl = { color: '#ea580c', font: 'Outfit', layout: 'standard', showBank: 'yes' };
+  try {
+    var saved = localStorage.getItem('invoiceTemplate');
+    if (saved) tpl = JSON.parse(saved);
+  } catch(e) {}
+
+  var accentColor = tpl.color || '#ea580c';
+  var fontStyle = tpl.font || 'Outfit';
+  var isCompact = tpl.layout === 'compact';
+  var isModern = tpl.layout === 'modern';
+
   var container = g('print-container');
-  
   var logoHtml = cp.logo 
-    ? '<img src="' + cp.logo + '" style="max-height: 70px; max-width: 140px; margin-right: 15px; border-radius: 4px; object-fit: contain;">' 
+    ? '<img src="' + cp.logo + '" style="max-height: ' + (isCompact ? '50px' : '65px') + '; margin-right: 15px; border-radius: 8px; object-fit: contain;">' 
     : '';
-    
-  container.innerHTML = 
-    '<div style="font-family: \'Outfit\', sans-serif; color: #1e293b; padding: 30px; line-height: 1.5;">' +
-      '<div style="display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; align-items: center;">' +
+
+  var headerHtml = '';
+  if (isModern) {
+    headerHtml = 
+      '<div style="background: ' + accentColor + '; color: #ffffff; padding: ' + (isCompact ? '15px' : '20px') + '; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">' +
         '<div style="display: flex; align-items: center;">' +
-          logoHtml +
+          (cp.logo ? '<div style="background: #ffffff; padding: 5px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">' + logoHtml + '</div>' : '') +
           '<div>' +
-            '<h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ea580c; text-transform: uppercase;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
-            '<p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 600; color: #475569;">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
-            '<p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">' + (cp.addr1 || '') + ', ' + (cp.addr2 || '') + ', ' + (cp.city || '') + '</p>' +
-            '<p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">Phone: ' + (cp.phone || '') + ' | Email: ' + (cp.email || '') + '</p>' +
+            '<h1 style="margin: 0; font-size: ' + (isCompact ? '18px' : '22px') + '; font-weight: 850; text-transform: uppercase;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
+            '<p style="margin: 3px 0 0 0; font-size: 11px; opacity: 0.9;">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
           '</div>' +
         '</div>' +
         '<div style="text-align: right;">' +
-          '<h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</h2>' +
-          '<p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; color: #334155;">Receipt #: REC-' + s.receiptNo + '</p>' +
-          '<p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">Date: ' + new Date().toLocaleDateString('en-GB').replace(/\//g, '-') + '</p>' +
+          '<h2 style="margin: 0; font-size: 12px; font-weight: 800; background: rgba(255,255,255,0.25); padding: 4px 8px; border-radius: 20px; display: inline-block;">PAYMENT RECEIPT</h2>' +
+          '<p style="margin: 5px 0 0 0; font-size: 12px; font-weight: 700;">Rec #: REC-' + s.receiptNo + '</p>' +
         '</div>' +
+      '</div>';
+  } else {
+    headerHtml = 
+      '<div style="display: flex; justify-content: space-between; border-bottom: 3px solid ' + accentColor + '; padding-bottom: 16px; margin-bottom: 20px; align-items: center;">' +
+        '<div style="display: flex; align-items: center;">' +
+          logoHtml +
+          '<div>' +
+            '<h1 style="margin: 0; font-size: ' + (isCompact ? '20px' : '24px') + '; font-weight: 900; color: #0f172a; text-transform: uppercase;">' + (cp.name || 'SHIV SHAKTI HP GAS AGENCY') + '</h1>' +
+            '<p style="margin: 3px 0 0 0; font-size: 11px; font-weight: 700; color: ' + accentColor + ';">GSTIN: ' + (cp.gst || 'Not Available') + '</p>' +
+            '<p style="margin: 1px 0 0 0; font-size: 10px; color: #64748b;">' + (cp.addr1 || '') + ', ' + (cp.city || '') + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align: right;">' +
+          '<h2 style="margin: 0; font-size: 13px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</h2>' +
+          '<p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 800; color: ' + accentColor + ';">REC-' + s.receiptNo + '</p>' +
+          '<p style="margin: 1px 0 0 0; font-size: 11px; color: #64748b;">Date: ' + s.date + '</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  container.innerHTML = 
+    '<div style="font-family: \'' + fontStyle + '\', sans-serif; color: #1e293b; padding: ' + (isCompact ? '15px' : '30px') + '; line-height: 1.5; background: #ffffff;">' +
+      headerHtml +
+      
+      '<div style="margin-bottom: 20px; background-color: #f8fafc; padding: ' + (isCompact ? '10px' : '15px') + '; border-radius: 10px; border: 1px solid #e2e8f0;">' +
+        '<h4 style="margin: 0 0 4px 0; font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Party Account Details</h4>' +
+        '<h3 style="margin: 0; font-size: ' + (isCompact ? '14px' : '16px') + '; font-weight: 850; color: #0f172a;">' + s.customerName + '</h3>' +
+        '<p style="margin: 3px 0 0 0; font-size: 12px; color: #334155;"><b>Phone:</b> ' + s.mobile + ' | <b>Address:</b> ' + s.address + '</p>' +
       '</div>' +
       
-      '<div style="margin-bottom: 20px; background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">' +
-        '<h4 style="margin: 0 0 6px 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Received From (Party Details):</h4>' +
-        '<h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #0f172a;">' + s.customerName + '</h3>' +
-        '<p style="margin: 4px 0 0 0; font-size: 13px; color: #334155; font-weight: 500;">Phone: ' + s.mobile + '</p>' +
-        '<p style="margin: 2px 0 0 0; font-size: 13px; color: #334155; font-weight: 500;">Address: ' + s.address + '</p>' +
-      '</div>' +
-      
-      '<div style="margin-bottom: 25px; padding: 15px 20px; border-left: 4px solid #10b981; background-color: #f0fdf4; border-radius: 4px;">' +
-        '<p style="margin: 0; font-size: 14px; font-weight: 500; color: #065f46; line-height: 1.6;">' +
-          'Received with thanks the sum of <b>' + fmt(s.totalPaid) + '</b> (' + 
-          'Cash Paid: ' + fmt(s.cashPaid) + ' | Online Paid: ' + fmt(s.onlinePaid) + ') ' +
-          'from <b>' + s.customerName + '</b>, against cylinder refill invoice <b>#' + s.receiptNo + '</b> dated ' + s.date + '.' +
+      '<div style="margin-bottom: 20px; padding: 15px; border-left: 4px solid #10b981; background-color: #f0fdf4; border-radius: 6px;">' +
+        '<p style="margin: 0; font-size: 13px; font-weight: 600; color: #065f46; line-height: 1.6;">' +
+          'Successfully received and logged the payment of <b>' + fmt(s.totalPaid) + '</b> ' + 
+          '(Cash: ' + fmt(s.cashPaid) + ' | Online: ' + fmt(s.onlinePaid) + ') ' +
+          'against cylinder refill invoice <b>#' + s.receiptNo + '</b>.' +
         '</p>' +
       '</div>' +
       
-      '<h4 style="margin: 20px 0 8px 0; font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Account Summary & Balance Statement:</h4>' +
-      '<table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px;">' +
+      '<h4 style="margin: 15px 0 8px 0; font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Payment Ledger Log</h4>' +
+      '<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">' +
         '<thead>' +
-          '<tr style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">' +
-            '<th style="padding: 10px; border: 1px solid #cbd5e1; text-align: left; font-weight: 700;">Description</th>' +
-            '<th style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; width: 200px; font-weight: 700;">Amount</th>' +
+          '<tr style="background-color: #f1f5f9; color: #475569; border-bottom: 1px solid #cbd5e1;">' +
+            '<th style="padding: 10px; text-align: left; font-weight: 700;">Account Description</th>' +
+            '<th style="padding: 10px; text-align: right; width: 180px; font-weight: 700;">Amount Logged</th>' +
           '</tr>' +
         '</thead>' +
         '<tbody>' +
           '<tr>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; color: #475569;">Original Invoice Amount</td>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; font-weight: 600; color: #475569;">' + fmt(s.invoiceTotal) + '</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #475569;">Total Refill Invoice Charges</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600;">' + fmt(s.invoiceTotal) + '</td>' +
           '</tr>' +
           '<tr>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; color: #16a34a;">Amount Paid (Cash)</td>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; color: #16a34a; font-weight: 600;">' + fmt(s.cashPaid) + '</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #16a34a;">Payment Mode: Cash</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #16a34a; font-weight: 600;">' + fmt(s.cashPaid) + '</td>' +
           '</tr>' +
           '<tr>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; color: #16a34a;">Amount Paid (Online)</td>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; color: #16a34a; font-weight: 600;">' + fmt(s.onlinePaid) + '</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color: #16a34a;">Payment Mode: Online</td>' +
+            '<td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #16a34a; font-weight: 600;">' + fmt(s.onlinePaid) + '</td>' +
           '</tr>' +
-          '<tr style="background-color: #f0fdf4; font-weight: 800; color: #0f172a; border-top: 2px solid #cbd5e1;">' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1;">Total Payments Received</td>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; color: #16a34a; font-size: 14px;">' + fmt(s.totalPaid) + '</td>' +
-          '</tr>' +
-          '<tr style="background-color: #fef2f2; font-weight: 800; color: #b91c1c;">' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1;">Remaining Balance Outstanding Dues</td>' +
-            '<td style="padding: 10px; border: 1px solid #cbd5e1; text-align: right; font-size: 15px;">' + fmt(s.balanceDue) + '</td>' +
+          '<tr style="background-color: #f8fafc; font-weight: 850; border-top: 2.5px solid ' + accentColor + '; color: #0f172a;">' +
+            '<td style="padding: 10px;">Remaining Outstanding Dues (Balance)</td>' +
+            '<td style="padding: 10px; text-align: right; color: ' + (s.balanceDue > 0 ? '#b91c1c' : '#16a34a') + '; font-size: 13px;">' + fmt(s.balanceDue) + '</td>' +
           '</tr>' +
         '</tbody>' +
       '</table>' +
       
-      '<div style="display: flex; justify-content: space-between; font-size: 13px; margin-top: 50px;">' +
+      '<div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 30px;">' +
         '<div style="width: 50%;">' +
-          '<p style="margin: 0 0 4px 0; font-weight: bold; font-size: 11px; color: #64748b; text-transform: uppercase;">Remarks:</p>' +
-          '<p style="margin: 0; font-size: 12px; color: #475569; font-style: italic;">' + (s.notes || 'Payment logged successfully.') + '</p>' +
+          '<p style="margin: 0 0 4px 0; font-weight: 800; font-size: 9px; color: #64748b; text-transform: uppercase;">Remarks & Notes:</p>' +
+          '<p style="margin: 0; font-size: 11px; color: #475569; font-style: italic;">' + (s.notes || 'No extra remarks logged.') + '</p>' +
         '</div>' +
-        '<div style="width: 40%; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 10px; font-weight: bold; color: #475569; margin-top: 30px;">' +
+        '<div style="width: 40%; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 8px; font-weight: bold; color: #475569; margin-top: 20px;">' +
           'Authorized Signature' +
         '</div>' +
       '</div>' +
       
-      '<div style="margin-top: 65px; border-top: 1px solid #cbd5e1; padding-top: 15px; font-size: 11px; text-align: center; color: #64748b;">' +
-        'This is a computer-generated transaction receipt. ' + (cp.terms || '') +
+      '<div style="margin-top: 45px; border-top: 1px solid #cbd5e1; padding-top: 12px; font-size: 10px; text-align: center; color: #64748b;">' +
+        'This receipt is generated digitally. Valid without manual signature stamp. ' + (cp.terms || '') +
       '</div>' +
     '</div>';
     
