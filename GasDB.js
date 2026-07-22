@@ -16,6 +16,7 @@ var SH_COMPANY  = 'GAS_COMPANY';
 var SH_PARTIES  = 'GAS_PARTIES';
 var SH_DRIVERS  = 'GAS_DRIVERS';
 var SH_PRICE_HISTORY = 'GAS_PRICE_HISTORY';
+var SH_USERS = 'GAS_USERS';
 
 // ── doGet: serve the HTML page ────────────────────────────────────────────────
 function doGet(e) {
@@ -52,6 +53,10 @@ function _ensureSheets() {
   _getOrCreate(SH_RETURNS,  ['TxnNo','Date','CustomerName','Mobile','ProductID','ProductName','ReturnedQty','Notes']);
   _getOrCreate(SH_COMPANY,  ['Key','Value']);
   _getOrCreate(SH_PRICE_HISTORY, ['HistoryID', 'ProductID', 'ProductName', 'OldRate', 'NewRate', 'ChangedAt']);
+  var userSh = _getOrCreate(SH_USERS, ['Username','Password','Role','CreatedAt']);
+  if (_rows(userSh).filter(function(r){ return r[0]; }).length === 0) {
+    userSh.appendRow(['admin', 'adminpassword', 'Administrator', new Date().toISOString()]);
+  }
   
   // Append ConsumerNos to existing sheets if missing
   var salesSh = SS().getSheetByName(SH_SALES);
@@ -993,6 +998,61 @@ function apiGetAllData() {
     var priceHistoryResult = apiGetPriceHistory();
     var priceHistory = priceHistoryResult.ok ? priceHistoryResult.history : [];
     
-    return { ok:true, company:company, products:products, drivers:drivers, sales:sales, drafts:drafts, returns:returns, tracker:tracker, parties:parties, priceHistory:priceHistory };
+    // Users
+    var userSh = ss.getSheetByName(SH_USERS);
+    var users = _rows(userSh).filter(function(r){ return r[0]; }).map(function(r){
+      return { username: r[0], password: r[1]||'', role: r[2]||'', createdAt: _dateFmt(r[3]) };
+    });
+    
+    return { ok:true, company:company, products:products, drivers:drivers, sales:sales, drafts:drafts, returns:returns, tracker:tracker, parties:parties, priceHistory:priceHistory, users:users };
   } catch(e) { return { ok:false, error:e.message }; }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PORTAL USER MANAGEMENT ENDPOINTS
+// ════════════════════════════════════════════════════════════════
+function apiSaveUser(u) {
+  try {
+    _ensureSheets();
+    var ss = SS();
+    var sh = ss.getSheetByName(SH_USERS);
+    var rows = _rows(sh);
+    
+    var foundIndex = -1;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i][0] === u.username) {
+        foundIndex = i;
+        break;
+      }
+    }
+    
+    if (foundIndex !== -1) {
+      sh.getRange(foundIndex + 2, 2).setValue(u.password);
+      sh.getRange(foundIndex + 2, 3).setValue(u.role);
+    } else {
+      sh.appendRow([u.username, u.password, u.role, new Date().toISOString()]);
+    }
+    return { ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+function apiDeleteUser(username) {
+  try {
+    _ensureSheets();
+    var ss = SS();
+    var sh = ss.getSheetByName(SH_USERS);
+    var rows = _rows(sh);
+    
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i][0] === username) {
+        sh.deleteRow(i + 2);
+        return { ok: true };
+      }
+    }
+    return { ok: false, error: 'User ' + username + ' not found.' };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
 }

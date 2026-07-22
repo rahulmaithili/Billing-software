@@ -25,19 +25,25 @@ class DBService {
   }
 
   initLocalStorage() {
-    const keys = ['app_parties', 'app_products', 'app_drivers', 'app_sales', 'app_drafts', 'app_returns', 'app_price_history', 'app_company'];
+    const keys = ['app_parties', 'app_products', 'app_drivers', 'app_sales', 'app_drafts', 'app_returns', 'app_price_history', 'app_company', 'app_users'];
     keys.forEach(key => {
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, JSON.stringify(key === 'app_company' ? {} : []));
       }
     });
+    // Seed default admin user if not present
+    const users = JSON.parse(localStorage.getItem('app_users') || '[]');
+    if (users.length === 0) {
+      users.push({ username: 'admin', password: 'adminpassword', role: 'Administrator', createdAt: new Date().toLocaleDateString('en-GB').replace(/\//g, '-') });
+      localStorage.setItem('app_users', JSON.stringify(users));
+    }
   }
 
   async loadAllDataFromFirestore() {
     if (!this.firestore) return;
     try {
       console.log("Fetching live dataset from Firebase Firestore...");
-      const collections = ['parties', 'products', 'drivers', 'sales', 'drafts', 'returns', 'price_history', 'company'];
+      const collections = ['parties', 'products', 'drivers', 'sales', 'drafts', 'returns', 'price_history', 'company', 'users'];
       const storageKeys = {
         'parties': 'app_parties',
         'products': 'app_products',
@@ -46,7 +52,8 @@ class DBService {
         'drafts': 'app_drafts',
         'returns': 'app_returns',
         'price_history': 'app_price_history',
-        'company': 'app_company'
+        'company': 'app_company',
+        'users': 'app_users'
       };
 
       for (const col of collections) {
@@ -441,6 +448,29 @@ class DBService {
         snap.forEach(doc => doc.ref.delete());
       });
     }
+  }
+
+  // --- Users ---
+  getUsers() { return this.getData('app_users'); }
+  saveUser(u) {
+    const list = this.getUsers();
+    const idx = list.findIndex(x => x.username === u.username);
+    if (idx !== -1) {
+      list[idx].password = u.password;
+      list[idx].role = u.role;
+    } else {
+      u.createdAt = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      list.push(u);
+    }
+    this.saveData('app_users', list);
+    this.syncToFirestore('users', u.username, u);
+    return u;
+  }
+  deleteUser(username) {
+    let list = this.getUsers();
+    list = list.filter(item => item.username !== username);
+    this.saveData('app_users', list);
+    this.deleteFromFirestore('users', username);
   }
 }
 

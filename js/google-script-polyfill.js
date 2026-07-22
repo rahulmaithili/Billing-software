@@ -63,6 +63,7 @@
         const tracker = db.getDynamicTracker(sales, returns);
         const parties = db.getParties();
         const priceHistory = db.getPriceHistory();
+        const users = db.getUsers();
         return {
           ok: true,
           company,
@@ -73,7 +74,8 @@
           returns,
           tracker,
           parties,
-          priceHistory
+          priceHistory,
+          users
         };
       }
 
@@ -345,6 +347,18 @@
           products: Object.keys(salesByProd).concat(Object.keys(retByProd)).filter((v, i, a) => a.indexOf(v) === i),
           filteredSales: salesRows
         };
+      }
+
+      case 'apiSaveUser': {
+        const u = args[0];
+        db.saveUser(u);
+        return { ok: true };
+      }
+
+      case 'apiDeleteUser': {
+        const username = args[0];
+        db.deleteUser(username);
+        return { ok: true };
       }
 
       default:

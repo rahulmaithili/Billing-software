@@ -270,6 +270,9 @@
       <a href="#" onclick="nav('company')" id="n-company" data-tooltip="Company Profile" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="settings" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Company Profile</span>
       </a>
+      <a href="#" onclick="nav('users')" id="n-users" data-tooltip="Manage Users" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
+        <i data-lucide="shield-alert" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Manage Users</span>
+      </a>
       <a href="#" onclick="nav('reports')" id="n-reports" data-tooltip="Reports & Analytics" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="bar-chart-2" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Reports & Analytics</span>
       </a>
@@ -1045,6 +1048,35 @@
       </div>
     </div>
 
+    <!-- ═══ USER MANAGEMENT ═════════════════════════════════════════ -->
+    <div class="page" id="p-users">
+      <div class="glass-card rounded-xl p-4 shadow-sm flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <input type="text" id="usr-search" oninput="renderUsers()" placeholder="Search users..." class="rounded-lg py-2 px-3.5 text-xs w-64 bg-white dark:bg-slate-950 border">
+        </div>
+        <button onclick="openUserModal()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center gap-1.5 shadow-lg shadow-brand-600/20">
+          <i data-lucide="plus-circle" class="h-4.5 w-4.5"></i> Add Portal User
+        </button>
+      </div>
+
+      <div class="glass-card rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead class="bg-slate-200 dark:bg-slate-900 border-b border-slate-350 dark:border-slate-800 text-[11px] font-extrabold uppercase text-slate-600 dark:text-slate-400">
+            <tr>
+              <th class="p-4">Username</th>
+              <th class="p-4">Portal Role</th>
+              <th class="p-4">Password</th>
+              <th class="p-4">Created At</th>
+              <th class="p-4 text-center w-32">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usr-body">
+            <tr><td colspan="5" class="p-8 text-center text-slate-500">Loading users dataset...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ═══ REPORTS ══════════════════════════════════════════════════ -->
     <div class="page" id="p-reports">
       <div class="glass-card rounded-xl p-5 shadow-sm mb-5 flex flex-wrap gap-4 items-end">
@@ -1475,6 +1507,42 @@
   </div>
 </div>
 
+<!-- User Modal -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal-box !w-[450px]">
+    <div class="bg-slate-900 text-white p-5 rounded-t-2xl flex items-center justify-between border-b border-slate-800">
+      <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="user" class="h-4.5 w-4.5 text-brand-500"></i> <span id="usr-modal-title">Add Portal User</span></h3>
+      <button onclick="closeModal('modal-user')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="h-5 w-5"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="usr-id">
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Username / Login ID *</label>
+        <input type="text" id="usr-username" class="w-full rounded-lg p-2.5 text-sm" placeholder="e.g. suresh_shakti">
+      </div>
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Security Password *</label>
+        <input type="text" id="usr-password" class="w-full rounded-lg p-2.5 text-sm" placeholder="Enter secure password">
+      </div>
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Access Role *</label>
+        <select id="usr-role" class="w-full rounded-lg p-2.5 text-sm">
+          <option value="Administrator">Administrator (Full Access)</option>
+          <option value="Billing Manager">Billing Manager</option>
+          <option value="Inventory Clerk">Inventory Clerk</option>
+          <option value="Accountant">Accountant (Read-Only)</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+        <button onclick="closeModal('modal-user')" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2 px-5 rounded-lg text-sm border border-slate-300 dark:border-slate-700">Cancel</button>
+        <button onclick="submitUser()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-5 rounded-lg text-sm flex items-center gap-2">
+          <i data-lucide="save" class="h-4 w-4"></i> Save User
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Gmail & WhatsApp Share Modal -->
 <div class="modal-overlay" id="modal-share">
   <div class="modal-box !w-[550px]">
@@ -1783,6 +1851,7 @@ function refreshAll(silent) {
       DB.tracker  = r.tracker || [];
       DB.parties  = r.parties || [];
       DB.priceHistory = r.priceHistory || [];
+      DB.users = r.users || [];
       
       // Update UI elements
       g('hdr-name').textContent = DB.company.name || 'Shiv Shakti HP Gas Agency';
@@ -1903,6 +1972,7 @@ function renderCurrentPage() {
     }
   }
   else if (CURRENT_PAGE === 'products') renderProducts();
+  else if (CURRENT_PAGE === 'users') renderUsers();
   else if (CURRENT_PAGE === 'reports') generateReport();
   else if (CURRENT_PAGE === 'daily-tally') renderDailyTally();
 }
@@ -5237,6 +5307,112 @@ function viewReturn(txnNo) {
     '</div>';
 
   openDetailViewModal(html);
+}
+
+// --- User Management Functions ---
+function renderUsers() {
+  var tbody = g('usr-body');
+  if (!tbody) return;
+  if (currentRole !== 'Administrator') {
+    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-rose-500 font-bold">Only Administrators are authorized to view portal users.</td></tr>';
+    return;
+  }
+  var q = g('usr-search').value.trim().toLowerCase();
+  var filtered = (DB.users || []).filter(function(u) {
+    if (q) {
+      return (u.username + '' + u.role).toLowerCase().indexOf(q) !== -1;
+    }
+    return true;
+  });
+
+  tbody.innerHTML = filtered.length ? filtered.map(function(u) {
+    return '<tr class="tbl-row border-b border-slate-200 dark:border-slate-800/50">'
+      + '<td class="p-4 font-bold text-slate-850 dark:text-white">' + u.username + '</td>'
+      + '<td class="p-4 font-bold text-xs text-brand-655">' + u.role + '</td>'
+      + '<td class="p-4 font-mono text-xs text-slate-500">' + u.password + '</td>'
+      + '<td class="p-4 text-slate-500 text-xs">' + (u.createdAt || '—') + '</td>'
+      + '<td class="p-4 text-center flex items-center justify-center gap-2">'
+      + '<button onclick="openUserModal(\'' + u.username + '\')" class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400" title="Edit User"><i data-lucide="pencil" class="h-4.5 w-4.5"></i></button>'
+      + '<button onclick="delUser(\'' + u.username + '\')" class="text-rose-500 hover:text-rose-700 dark:hover:text-rose-455" title="Delete User"><i data-lucide="trash-2" class="h-4.5 w-4.5"></i></button>'
+      + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="p-8 text-center text-slate-500">No portal users configured. Click Add Portal User to configure access.</td></tr>';
+  lucide.createIcons();
+}
+
+function openUserModal(username) {
+  if (!canPerformAction('edit')) return;
+  g('usr-id').value = '';
+  g('usr-username').value = '';
+  g('usr-password').value = '';
+  g('usr-role').value = 'Billing Manager';
+  g('usr-username').disabled = false;
+  g('usr-modal-title').textContent = 'Add Portal User';
+
+  if (username) {
+    var u = DB.users.find(function(x) { return x.username === username; });
+    if (u) {
+      g('usr-id').value = u.username;
+      g('usr-username').value = u.username;
+      g('usr-username').disabled = true;
+      g('usr-password').value = u.password;
+      g('usr-role').value = u.role;
+      g('usr-modal-title').textContent = 'Edit Portal User';
+    }
+  }
+  openModal('modal-user');
+}
+
+function submitUser() {
+  if (!canPerformAction('edit')) return;
+  var data = {
+    username: g('usr-username').value.trim(),
+    password: g('usr-password').value.trim(),
+    role: g('usr-role').value
+  };
+
+  if (!data.username || !data.password) {
+    toast('Username and Password are required!', 'error');
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r.ok) {
+        closeModal('modal-user');
+        toast('User details saved successfully', 'success');
+        refreshAll(true);
+      } else {
+        toast(r.error, 'error');
+      }
+    })
+    .withFailureHandler(function(e) { toast(e.message, 'error'); })
+    .apiSaveUser(data);
+}
+
+function delUser(username) {
+  if (!canPerformAction('delete')) return;
+  Swal.fire({
+    title: 'Delete Portal User?',
+    text: 'User ' + username + ' will be removed. They will lose access to the portal.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    confirmButtonText: 'Delete User'
+  }).then(function(res) {
+    if (res.isConfirmed) {
+      google.script.run
+        .withSuccessHandler(function(r) {
+          if (r.ok) {
+            toast('User deleted successfully', 'success');
+            refreshAll(true);
+          } else {
+            toast(r.error, 'error');
+          }
+        })
+        .withFailureHandler(function(e) { toast(e.message, 'error'); })
+        .apiDeleteUser(username);
+    }
+  });
 }
 
 function editReturn(txnNo) {
