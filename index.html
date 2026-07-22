@@ -404,15 +404,26 @@
       <a href="#" onclick="nav('company')" id="n-company" data-tooltip="Company Profile" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="settings" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Company Profile</span>
       </a>
-      <a href="#" onclick="nav('users')" id="n-users" data-tooltip="Manage Users" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
-        <i data-lucide="shield-alert" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Manage Users</span>
-      </a>
-      <a href="#" onclick="nav('audit')" id="n-audit" data-tooltip="Audit Log" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
-        <i data-lucide="shield-check" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Audit Log</span>
-      </a>
-      <a href="#" onclick="nav('login-history')" id="n-login-history" data-tooltip="Login History" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
-        <i data-lucide="log-in" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Login History</span>
-      </a>
+      <!-- Manage Users Collapsible Group -->
+      <div class="space-y-1">
+        <a href="#" onclick="toggleUsersSubmenu(event); nav('users');" id="n-users" data-tooltip="Manage Users" class="nav-link flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
+          <div class="flex items-center gap-3">
+            <i data-lucide="shield-alert" class="h-4.5 w-4.5 shrink-0"></i>
+            <span class="nl">Manage Users</span>
+          </div>
+          <i data-lucide="chevron-down" class="h-3.5 w-3.5 transition-transform duration-200" id="users-submenu-chevron"></i>
+        </a>
+        <div id="users-submenu" class="pl-5 space-y-1 hidden">
+          <a href="#" onclick="nav('audit')" id="n-audit" data-tooltip="Audit Log" class="nav-link flex items-center gap-2.5 py-2 px-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white text-xs font-semibold transition-all">
+            <i data-lucide="shield-check" class="h-3.5 w-3.5 shrink-0"></i>
+            <span>Audit Log</span>
+          </a>
+          <a href="#" onclick="nav('login-history')" id="n-login-history" data-tooltip="Login History" class="nav-link flex items-center gap-2.5 py-2 px-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white text-xs font-semibold transition-all">
+            <i data-lucide="log-in" class="h-3.5 w-3.5 shrink-0"></i>
+            <span>Login History</span>
+          </a>
+        </div>
+      </div>
       <a href="#" onclick="nav('reports')" id="n-reports" data-tooltip="Reports & Analytics" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white font-semibold transition-all text-sm">
         <i data-lucide="bar-chart-2" class="h-4.5 w-4.5 shrink-0"></i><span class="nl">Reports & Analytics</span>
       </a>
@@ -2708,6 +2719,25 @@ function toggleSidebar() {
   lucide.createIcons();
 }
 
+function toggleUsersSubmenu(event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  var submenu = g('users-submenu');
+  var chevron = g('users-submenu-chevron');
+  if (submenu) {
+    var isHidden = submenu.classList.contains('hidden');
+    if (isHidden) {
+      submenu.classList.remove('hidden');
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+      submenu.classList.add('hidden');
+      if (chevron) chevron.style.transform = '';
+    }
+  }
+}
+
 function nav(pageId) {
   if (!isPageAllowedForRole(pageId)) {
     Swal.fire({
@@ -2748,6 +2778,19 @@ function nav(pageId) {
     'login-history': 'Login & Session History'
   };
   g('page-title').textContent = titles[pageId] || 'Shiv Shakti Gas Portal';
+
+  // Manage Users submenu auto expansion logic
+  var submenu = g('users-submenu');
+  var chevron = g('users-submenu-chevron');
+  if (submenu) {
+    if (pageId === 'users' || pageId === 'audit' || pageId === 'login-history') {
+      submenu.classList.remove('hidden');
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+      submenu.classList.add('hidden');
+      if (chevron) chevron.style.transform = '';
+    }
+  }
   
   if (pageId === 'sales') {
     initSalesViewSwitcher();
