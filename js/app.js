@@ -188,7 +188,12 @@ async function renderView(viewId) {
   try {
     const response = await fetch(`${viewId}.html`);
     if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-    const html = await response.text();
+    let html = await response.text();
+
+    // Workaround for DOMContentLoaded inside template scripts
+    // Since DOMContentLoaded fired long ago, we replace it to run immediately upon tag evaluation
+    html = html.replace(/document\.addEventListener\(\s*['"]DOMContentLoaded['"]\s*,\s*function\s*\(\s*\)\s*\{/g, '(function(){');
+    html = html.replace(/\$\(\s*document\s*\)\.ready\(\s*function\s*\(\s*\)\s*\{/g, '(function(){');
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -196,6 +201,7 @@ async function renderView(viewId) {
 
     container.innerHTML = bodyContent;
 
+    // Execute scripts inside loaded view
     const scripts = container.querySelectorAll('script');
     scripts.forEach(oldScript => {
       const newScript = document.createElement('script');
