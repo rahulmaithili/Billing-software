@@ -1,5 +1,5 @@
 /**
- * Database Service Layer with Live Firebase Firestore Connection & Local Cache Sync
+ * Database Service Layer with Live Firebase Firestore Connection & Real-Time Sync
  */
 
 const INITIAL_INVENTORY = [
@@ -60,8 +60,8 @@ const INITIAL_PAYMENTS = [
 class DBService {
   constructor() {
     this.firestore = null;
-    this.initFirebase();
     this.initLocalStorage();
+    this.initFirebase();
   }
 
   initFirebase() {
@@ -72,6 +72,7 @@ class DBService {
         }
         this.firestore = firebase.firestore();
         console.log("Firebase Firestore initialized successfully.");
+        this.loadAllDataFromFirestore();
       }
     } catch (err) {
       console.warn("Firebase fallback mode active:", err);
@@ -79,13 +80,69 @@ class DBService {
   }
 
   initLocalStorage() {
-    localStorage.setItem('app_inventory', JSON.stringify(INITIAL_INVENTORY));
-    localStorage.setItem('app_customers', JSON.stringify(INITIAL_CUSTOMERS));
-    localStorage.setItem('app_suppliers', JSON.stringify(INITIAL_SUPPLIERS));
-    localStorage.setItem('app_sales', JSON.stringify(INITIAL_SALES));
-    localStorage.setItem('app_purchases', JSON.stringify(INITIAL_PURCHASES));
-    localStorage.setItem('app_receipts', JSON.stringify(INITIAL_RECEIPTS));
-    localStorage.setItem('app_payments', JSON.stringify(INITIAL_PAYMENTS));
+    // Only initialize with empty placeholder arrays if no data exists
+    const keys = ['app_inventory', 'app_customers', 'app_suppliers', 'app_sales', 'app_purchases', 'app_receipts', 'app_payments'];
+    keys.forEach(key => {
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, JSON.stringify([]));
+      }
+    });
+  }
+
+  async loadAllDataFromFirestore() {
+    if (!this.firestore) return;
+    try {
+      console.log("Fetching live dataset from Firebase Firestore...");
+      const collections = ['inventory', 'customers', 'suppliers', 'sales', 'purchases', 'receipts', 'payments'];
+      const storageKeys = {
+        'inventory': 'app_inventory',
+        'customers': 'app_customers',
+        'suppliers': 'app_suppliers',
+        'sales': 'app_sales',
+        'purchases': 'app_purchases',
+        'receipts': 'app_receipts',
+        'payments': 'app_payments'
+      };
+
+      for (const col of collections) {
+        const snapshot = await this.firestore.collection(col).get();
+        if (!snapshot.empty) {
+          const items = [];
+          snapshot.forEach(doc => {
+            items.push(doc.data());
+          });
+          this.saveData(storageKeys[col], items);
+          console.log(`Firestore Sync: Loaded ${items.length} items for ${col}`);
+        } else {
+          // If Firestore collection is empty, populate it with rich initial demo dataset
+          const initialData = this.getInitialDataForCollection(col);
+          this.saveData(storageKeys[col], initialData);
+          for (const item of initialData) {
+            await this.firestore.collection(col).doc(item.id).set(item);
+          }
+          console.log(`Firestore Seeded: Populated ${col} with default demo data.`);
+        }
+      }
+
+      // Re-trigger active view to render the fetched firestore data instantly
+      if (window.location && typeof window.renderView === 'function') {
+        const currentHash = window.location.hash.replace('#', '') || 'dashboard';
+        window.renderView(currentHash);
+      }
+    } catch (err) {
+      console.error("Firestore retrieval error:", err);
+    }
+  }
+
+  getInitialDataForCollection(col) {
+    if (col === 'inventory') return INITIAL_INVENTORY;
+    if (col === 'customers') return INITIAL_CUSTOMERS;
+    if (col === 'suppliers') return INITIAL_SUPPLIERS;
+    if (col === 'sales') return INITIAL_SALES;
+    if (col === 'purchases') return INITIAL_PURCHASES;
+    if (col === 'receipts') return INITIAL_RECEIPTS;
+    if (col === 'payments') return INITIAL_PAYMENTS;
+    return [];
   }
 
   getData(key) {
@@ -212,7 +269,7 @@ class DBService {
     return pay;
   }
 
-  // --- Dashboard Metrics Calculation ---
+  // --- Dashboard Metrics ---
   getDashboardMetrics() {
     const sales = this.getSales();
     const purchases = this.getPurchases();
@@ -257,3 +314,4 @@ class DBService {
 }
 
 window.dbService = new DBService();
+export default window.dbService;
