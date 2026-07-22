@@ -1,10 +1,29 @@
 /**
- * Google Apps Script (google.script.run) Compatibility Polyfill with RBAC Protection
+ * Google Apps Script (google.script.run) Compatibility Polyfill with Auto-Hide Processing Overlays
  */
 
 (function() {
   window.google = window.google || {};
   window.google.script = window.google.script || {};
+
+  // Auto-hide any stuck processing overlay
+  window.hideProcessingOverlays = function() {
+    const ids = ['processingOverlay', 'soProcessingOverlay', 'poProcessingOverlay', 'supProcessingOverlay', 'custProcessingOverlay', 'rcProcessing', 'ptProcessing'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'none';
+        el.style.visibility = 'hidden';
+      }
+    });
+    document.querySelectorAll('.processing-overlay').forEach(el => {
+      el.style.display = 'none';
+      el.style.visibility = 'hidden';
+    });
+  };
+
+  // Run auto-hide periodically to prevent stuck overlays
+  setInterval(window.hideProcessingOverlays, 300);
 
   window.google.script.run = new Proxy({}, {
     get(target, prop) {
@@ -34,6 +53,8 @@
             if (typeof failureHandler === 'function') {
               failureHandler(err);
             }
+          } finally {
+            window.hideProcessingOverlays();
           }
         });
         return handler;
@@ -45,14 +66,12 @@
     const db = window.dbService;
     console.log(`[GoogleScriptPolyfill] Calling ${funcName} with args:`, args);
 
-    // Block delete operations for non-Admin users
     if (funcName.toLowerCase().includes('delete')) {
       if (!window.canPerformAction('delete')) {
         throw new Error("Access Denied: Only Administrators can delete records.");
       }
     }
 
-    // Block update operations if user cannot edit
     if (funcName.toLowerCase().includes('update') || funcName.toLowerCase().includes('save') || funcName.toLowerCase().includes('addnew')) {
       if (!window.canPerformAction('edit')) {
         throw new Error("Access Denied: Your current role is not authorized to edit records.");

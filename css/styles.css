@@ -1,4 +1,4 @@
-/* Billing Software - Enterprise ERP Theme & Modal Overlay Fixes */
+/* Billing Software - Enterprise ERP Theme with Processing Overlay Fixes */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
@@ -418,11 +418,25 @@ body {
   min-height: 520px;
 }
 
-/* === CRITICAL FIX FOR MODALS & OVERLAYS === */
+/* === CRITICAL FIX FOR STUCK 'PROCESSING...' OVERLAYS === */
 
-/* Hide all inline modal dialogs by default so they don't dump onto the page body! */
+/* Prevent processing overlays from blocking page or staying stuck */
+#processingOverlay,
+#soProcessingOverlay,
+#poProcessingOverlay,
+#supProcessingOverlay,
+#custProcessingOverlay,
+#rcProcessing,
+#ptProcessing,
+.processing-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide all inline modal dialogs by default */
 .modal,
-.modal-backdrop,
 #addItemTypeModal,
 #addItemCategoryModal,
 #addItemSubcategoryModal,
@@ -448,7 +462,6 @@ body {
   z-index: 99999;
 }
 
-/* Display modal overlay when active or opened via JS */
 .modal.show,
 .modal.in,
 .modal.active,
@@ -458,7 +471,6 @@ body {
   justify-content: center;
 }
 
-/* Modal Inner Container Styling */
 .modal-dialog,
 .modal-content,
 .modal-card {
