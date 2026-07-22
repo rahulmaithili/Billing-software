@@ -2392,7 +2392,8 @@ window.onload = function() {
   }
 
   // Check for remembered login session
-  var savedSession = localStorage.getItem('ss_session');
+  // Check for remembered or tab session to prevent logout on refresh
+  var savedSession = localStorage.getItem('ss_session') || sessionStorage.getItem('ss_session');
   if (savedSession) {
     try {
       var sess = JSON.parse(savedSession);
@@ -2407,7 +2408,10 @@ window.onload = function() {
       if (g('dt-end')) g('dt-end').value = todayStr;
       refreshAll(true);
       return;
-    } catch(e) { localStorage.removeItem('ss_session'); }
+    } catch(e) { 
+      localStorage.removeItem('ss_session'); 
+      sessionStorage.removeItem('ss_session');
+    }
   }
 
   // Show login screen
