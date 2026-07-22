@@ -1,5 +1,5 @@
 /**
- * Main Application Routing, Sidebar Controller & Role-Based Access Control (RBAC)
+ * Main Application Routing, Sidebar Controller & Dashboard Renderer
  */
 
 window.currentRole = localStorage.getItem('user_role') || 'Administrator';
@@ -80,7 +80,6 @@ function switchRole(newRole) {
   showToast(`Switched active user to: ${window.currentUserName}`, 'info');
   applyRolePermissions();
 
-  // Reload current view with updated access restrictions
   const currentHash = window.location.hash.replace('#', '') || 'dashboard';
   if (!isPageAllowedForRole(currentHash)) {
     switchView('dashboard');
@@ -126,7 +125,6 @@ function applyRolePermissions() {
   }
 }
 
-// Helper to check if current user can Edit or Delete
 window.canPerformAction = function(actionType) {
   const role = window.currentRole;
   if (role === 'Administrator') return true;
@@ -168,7 +166,6 @@ async function renderView(viewId) {
 
     container.innerHTML = bodyContent;
 
-    // Execute scripts inside loaded view
     const scripts = container.querySelectorAll('script');
     scripts.forEach(oldScript => {
       const newScript = document.createElement('script');
@@ -183,113 +180,172 @@ async function renderView(viewId) {
   }
 }
 
-// --- Dashboard View ---
+// --- Dashboard View Matching Original Apps Script Screenshot ---
 function renderDashboardView(container) {
   const m = window.dbService.getDashboardMetrics();
 
   container.innerHTML = `
-    <!-- KPI Row -->
-    <div class="grid-kpi">
-      <div class="glass-card kpi-card">
-        <div class="kpi-info">
-          <h4>Total Sales</h4>
-          <div class="val">₹${m.totalSales.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="kpi-icon blue"><i class="fas fa-chart-line"></i></div>
+    <!-- Header -->
+    <div class="dash-header-section">
+      <h1>Dashboard</h1>
+      <p>Key trends and business insights</p>
+    </div>
+
+    <!-- 7 KPI Row -->
+    <div class="dash-kpi-row">
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-chart-line"></i> Total Sales</div>
+        <div class="dash-kpi-val">₹${m.totalSales.toLocaleString('en-IN')}</div>
       </div>
-      <div class="glass-card kpi-card">
-        <div class="kpi-info">
-          <h4>Total Purchases</h4>
-          <div class="val">₹${m.totalPurchases.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="kpi-icon amber"><i class="fas fa-shopping-bag"></i></div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-shopping-cart"></i> Total Purchases</div>
+        <div class="dash-kpi-val">₹${m.totalPurchases.toLocaleString('en-IN')}</div>
       </div>
-      <div class="glass-card kpi-card">
-        <div class="kpi-info">
-          <h4>Net Profit</h4>
-          <div class="val" style="color: ${m.netProfit >= 0 ? '#1abc9c' : '#e74c3c'};">₹${m.netProfit.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="kpi-icon green"><i class="fas fa-wallet"></i></div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-dollar-sign"></i> Net Profit</div>
+        <div class="dash-kpi-val" style="color: ${m.netProfit >= 0 ? '#1abc9c' : '#e74c3c'};">₹${m.netProfit.toLocaleString('en-IN')}</div>
       </div>
-      <div class="glass-card kpi-card">
-        <div class="kpi-info">
-          <h4>Receivables</h4>
-          <div class="val">₹${m.totalReceivable.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="kpi-icon cyan"><i class="fas fa-hand-holding-usd"></i></div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-file-invoice"></i> Total Receivable</div>
+        <div class="dash-kpi-val">₹${m.totalReceivable.toLocaleString('en-IN')}</div>
       </div>
-      <div class="glass-card kpi-card">
-        <div class="kpi-info">
-          <h4>Payables</h4>
-          <div class="val">₹${m.totalPayable.toLocaleString('en-IN')}</div>
-        </div>
-        <div class="kpi-icon pink"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-book"></i> Total Payable</div>
+        <div class="dash-kpi-val">₹${m.totalPayable.toLocaleString('en-IN')}</div>
+      </div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-map-marker-alt"></i> Top Sales Location</div>
+        <div class="dash-kpi-val" style="font-size: 0.95rem;">${m.topLocation}</div>
+      </div>
+      <div class="dash-kpi-card">
+        <div class="dash-kpi-title"><i class="fas fa-crown"></i> Top Selling Item</div>
+        <div class="dash-kpi-val" style="font-size: 0.95rem;">${m.topItem}</div>
       </div>
     </div>
 
-    <!-- Charts Grid -->
-    <div class="grid-charts">
-      <div class="glass-card">
-        <div class="chart-header">
-          <h3>Sales vs Purchases Analytics</h3>
+    <!-- 3-Column Charts Grid -->
+    <div class="dash-charts-grid">
+      <!-- Left Column -->
+      <div class="dash-col">
+        <div class="dash-card">
+          <div class="dash-card-title">Sales Trend</div>
+          <div id="chartSalesTrend" style="min-height: 220px;"></div>
         </div>
-        <canvas id="salesPurchasesChart" height="220"></canvas>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="dash-card">
+            <div class="dash-card-title">Sales By Location</div>
+            <div id="chartSalesByLocation" style="min-height: 180px;"></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-title">Sales By Category</div>
+            <div id="chartSalesByCategory" style="min-height: 180px;"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="glass-card">
-        <div class="chart-header">
-          <h3>Top Sales Locations</h3>
+      <!-- Middle Column (Tall) -->
+      <div class="dash-col">
+        <div class="dash-card tall">
+          <div class="dash-card-title">Top 10 Customers</div>
+          <div id="chartTopCustomers" style="min-height: 460px;"></div>
         </div>
-        <canvas id="locationChart" height="220"></canvas>
+      </div>
+
+      <!-- Right Column -->
+      <div class="dash-col">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="dash-card">
+            <div class="dash-card-title">Purchase By Location</div>
+            <div id="chartPurchaseByLocation" style="min-height: 180px;"></div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-title">Purchase By Category</div>
+            <div id="chartPurchaseByCategory" style="min-height: 180px;"></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">Sales By City</div>
+          <div id="chartSalesByCity" style="min-height: 220px;"></div>
+        </div>
       </div>
     </div>
   `;
 
   setTimeout(() => {
-    initDashboardCharts(m);
+    initDashboardApexCharts(m);
   }, 100);
 }
 
-function initDashboardCharts(m) {
-  const ctx1 = document.getElementById('salesPurchasesChart');
-  if (ctx1) {
-    new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: ['Raw Material', 'Electrical', 'Components', 'Plastics'],
-        datasets: [
-          { label: 'Sales (₹)', data: [170000, 180000, 180000, 270000], backgroundColor: '#1abc9c' },
-          { label: 'Purchases (₹)', data: [325000, 270000, 150000, 90000], backgroundColor: '#f39c12' }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { labels: { color: '#34495e' } } },
-        scales: {
-          x: { ticks: { color: '#7f8c8d' }, grid: { color: '#e0e0e0' } },
-          y: { ticks: { color: '#7f8c8d' }, grid: { color: '#e0e0e0' } }
-        }
-      }
-    });
-  }
+function initDashboardApexCharts(m) {
+  if (typeof ApexCharts === 'undefined') return;
 
-  const ctx2 = document.getElementById('locationChart');
-  if (ctx2) {
-    new Chart(ctx2, {
-      type: 'doughnut',
-      data: {
-        labels: ['Mumbai', 'Bengaluru', 'Ahmedabad', 'Delhi'],
-        datasets: [{
-          data: [170000, 180000, 180000, 270000],
-          backgroundColor: ['#1abc9c', '#3498db', '#f39c12', '#e74c3c']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom', labels: { color: '#34495e' } } }
-      }
-    });
-  }
+  // 1. Sales Trend
+  new ApexCharts(document.querySelector("#chartSalesTrend"), {
+    series: [{ name: "Sales (₹)", data: [120000, 150000, 180000, 220000, 270000, 310000] }],
+    chart: { type: 'area', height: 210, toolbar: { show: false } },
+    colors: ['#1abc9c'],
+    stroke: { curve: 'smooth', width: 2 },
+    fill: { opacity: 0.2 },
+    xaxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] }
+  }).render();
+
+  // 2. Sales By Location
+  new ApexCharts(document.querySelector("#chartSalesByLocation"), {
+    series: [40, 25, 20, 15],
+    chart: { type: 'donut', height: 180 },
+    labels: ['Mumbai', 'Bengaluru', 'Ahmedabad', 'Delhi'],
+    colors: ['#1abc9c', '#3498db', '#f39c12', '#e74c3c'],
+    legend: { show: false }
+  }).render();
+
+  // 3. Sales By Category
+  new ApexCharts(document.querySelector("#chartSalesByCategory"), {
+    series: [45, 30, 15, 10],
+    chart: { type: 'pie', height: 180 },
+    labels: ['Raw Material', 'Electrical', 'Components', 'Plastics'],
+    colors: ['#3498db', '#1abc9c', '#f39c12', '#9b59b6'],
+    legend: { show: false }
+  }).render();
+
+  // 4. Top 10 Customers (Tall Card)
+  new ApexCharts(document.querySelector("#chartTopCustomers"), {
+    series: [{ name: "Revenue (₹)", data: [270000, 180000, 180000, 170000, 140000, 120000, 95000, 80000, 65000, 45000] }],
+    chart: { type: 'bar', height: 460, toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+    colors: ['#2c3e50'],
+    xaxis: { categories: ['Sunrise Fab', 'Vertex Tech', 'Global Eng', 'Apex Builders', 'Ultra Tech', 'L&T Infra', 'Godrej', 'Tata Motors', 'Mahindra', 'Reliance'] }
+  }).render();
+
+  // 5. Purchase By Location
+  new ApexCharts(document.querySelector("#chartPurchaseByLocation"), {
+    series: [50, 30, 20],
+    chart: { type: 'donut', height: 180 },
+    labels: ['Jharkhand', 'UP', 'Gujarat'],
+    colors: ['#f39c12', '#3498db', '#1abc9c'],
+    legend: { show: false }
+  }).render();
+
+  // 6. Purchase By Category
+  new ApexCharts(document.querySelector("#chartPurchaseByCategory"), {
+    series: [{ name: "Purchases", data: [325000, 280000, 270000] }],
+    chart: { type: 'bar', height: 180, toolbar: { show: false } },
+    colors: ['#e74c3c'],
+    xaxis: { categories: ['Raw Material', 'Electrical', 'Components'] }
+  }).render();
+
+  // 7. Sales By City
+  new ApexCharts(document.querySelector("#chartSalesByCity"), {
+    series: [{
+      data: [
+        { x: 'Mumbai', y: 170000 },
+        { x: 'Bengaluru', y: 180000 },
+        { x: 'Ahmedabad', y: 180000 },
+        { x: 'Delhi', y: 270000 }
+      ]
+    }],
+    chart: { type: 'treemap', height: 210, toolbar: { show: false } },
+    colors: ['#1abc9c', '#3498db', '#f39c12', '#9b59b6']
+  }).render();
 }
 
 // --- Toast System ---
