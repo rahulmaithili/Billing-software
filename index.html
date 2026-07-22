@@ -111,12 +111,30 @@
     <main class="main-wrapper">
       <!-- Top Bar -->
       <header class="top-header">
-        <div class="page-title">
-          <h1>Billing & Inventory Management</h1>
+        <div class="header-left">
+          <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar (Collapse/Expand)">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-title">
+            <h1>Billing & Inventory Management</h1>
+          </div>
         </div>
-        <div class="header-actions">
+
+        <div class="header-right">
+          <!-- Role Switcher -->
+          <div class="role-switcher-box">
+            <i class="fas fa-user-shield" style="color: #1abc9c;"></i>
+            <label>Role:</label>
+            <select id="topRoleSelect">
+              <option value="Administrator">Administrator (Full Access)</option>
+              <option value="Billing Manager">Billing Manager</option>
+              <option value="Inventory Clerk">Inventory Clerk</option>
+              <option value="Accountant">Accountant (Read-Only)</option>
+            </select>
+          </div>
+
           <div class="badge-status">
-            <span class="status-dot"></span> Firebase Live
+            <span class="status-dot"></span> <span id="roleBadgeDisplay">Administrator Access</span>
           </div>
         </div>
       </header>

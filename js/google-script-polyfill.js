@@ -1,6 +1,5 @@
 /**
- * Google Apps Script (google.script.run) Compatibility Polyfill
- * Intercepts all backend calls from original Apps Script HTML files and routes them to DBService / Firestore.
+ * Google Apps Script (google.script.run) Compatibility Polyfill with RBAC Protection
  */
 
 (function() {
@@ -23,7 +22,6 @@
         }
       };
 
-      // Create callable function for any backend method name
       return function(...args) {
         Promise.resolve().then(async () => {
           try {
@@ -46,6 +44,20 @@
   async function handleBackendCall(funcName, args) {
     const db = window.dbService;
     console.log(`[GoogleScriptPolyfill] Calling ${funcName} with args:`, args);
+
+    // Block delete operations for non-Admin users
+    if (funcName.toLowerCase().includes('delete')) {
+      if (!window.canPerformAction('delete')) {
+        throw new Error("Access Denied: Only Administrators can delete records.");
+      }
+    }
+
+    // Block update operations if user cannot edit
+    if (funcName.toLowerCase().includes('update') || funcName.toLowerCase().includes('save')) {
+      if (!window.canPerformAction('edit')) {
+        throw new Error("Access Denied: Your current role is not authorized to edit records.");
+      }
+    }
 
     switch (funcName) {
       // --- Dashboard ---

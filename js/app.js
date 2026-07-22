@@ -1,20 +1,42 @@
 /**
- * Main Application Routing & Template Loader
- * Dynamically loads exact original HTML pages & initializes polyfilled Google Apps Script handlers.
+ * Main Application Routing, Sidebar Controller & Role-Based Access Control (RBAC)
  */
+
+window.currentRole = localStorage.getItem('user_role') || 'Administrator';
+window.currentUserName = 'Rahul Maithili';
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
+  initRoleSwitcher();
   loadCurrentView();
+  applyRolePermissions();
 });
 
+// --- Sidebar Open/Close Toggle ---
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const mainWrapper = document.querySelector('.main-wrapper');
+
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle('mobile-open');
+  } else {
+    sidebar.classList.toggle('collapsed');
+    mainWrapper.classList.toggle('expanded');
+  }
+}
+
+// --- Navigation ---
 function initNavigation() {
   const navLinks = document.querySelectorAll('.nav-item a');
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const page = link.getAttribute('data-page');
-      switchView(page);
+      if (isPageAllowedForRole(page)) {
+        switchView(page);
+      } else {
+        showToast(`Access Denied: Your role (${window.currentRole}) is not authorized to view ${page.toUpperCase()}.`, 'error');
+      }
     });
   });
 }
@@ -35,6 +57,97 @@ function loadCurrentView() {
   switchView(hash);
 }
 
+// --- Role-Based Access Control (RBAC) ---
+function initRoleSwitcher() {
+  const select = document.getElementById('topRoleSelect');
+  if (select) {
+    select.value = window.currentRole;
+    select.addEventListener('change', (e) => {
+      switchRole(e.target.value);
+    });
+  }
+}
+
+function switchRole(newRole) {
+  window.currentRole = newRole;
+  localStorage.setItem('user_role', newRole);
+  
+  if (newRole === 'Administrator') window.currentUserName = 'Rahul Maithili (Admin)';
+  else if (newRole === 'Billing Manager') window.currentUserName = 'Anita Sharma (Billing Manager)';
+  else if (newRole === 'Inventory Clerk') window.currentUserName = 'Vikram Singh (Inventory Clerk)';
+  else window.currentUserName = 'Suresh Patel (Accountant)';
+
+  showToast(`Switched active user to: ${window.currentUserName}`, 'info');
+  applyRolePermissions();
+
+  // Reload current view with updated access restrictions
+  const currentHash = window.location.hash.replace('#', '') || 'dashboard';
+  if (!isPageAllowedForRole(currentHash)) {
+    switchView('dashboard');
+  } else {
+    renderView(currentHash);
+  }
+}
+
+function isPageAllowedForRole(page) {
+  const role = window.currentRole;
+  if (role === 'Administrator') return true;
+
+  const permissions = {
+    'Billing Manager': ['dashboard', 'sales', 'receipts', 'customers', 'reports'],
+    'Inventory Clerk': ['dashboard', 'inventory', 'purchases', 'suppliers'],
+    'Accountant': ['dashboard', 'reports', 'receipts', 'payments', 'customers', 'suppliers']
+  };
+
+  const allowedPages = permissions[role] || ['dashboard'];
+  return allowedPages.includes(page);
+}
+
+function applyRolePermissions() {
+  const role = window.currentRole;
+  const navItems = document.querySelectorAll('.nav-item');
+
+  navItems.forEach(item => {
+    const link = item.querySelector('a');
+    if (!link) return;
+    const page = link.getAttribute('data-page');
+    if (!isPageAllowedForRole(page)) {
+      item.classList.add('disabled');
+      item.style.opacity = '0.35';
+    } else {
+      item.classList.remove('disabled');
+      item.style.opacity = '1';
+    }
+  });
+
+  const roleBadge = document.getElementById('roleBadgeDisplay');
+  if (roleBadge) {
+    roleBadge.innerText = `${window.currentRole} Access`;
+  }
+}
+
+// Helper to check if current user can Edit or Delete
+window.canPerformAction = function(actionType) {
+  const role = window.currentRole;
+  if (role === 'Administrator') return true;
+
+  if (actionType === 'delete') {
+    showToast(`Permission Denied: Only Administrators are authorized to DELETE records.`, 'error');
+    return false;
+  }
+
+  if (actionType === 'edit') {
+    if (role === 'Accountant') {
+      showToast(`Permission Denied: Accountants are in Read-Only mode.`, 'error');
+      return false;
+    }
+    return true;
+  }
+
+  return true;
+};
+
+// --- View Loader ---
 async function renderView(viewId) {
   const container = document.getElementById('view-container');
   if (!container) return;
@@ -44,20 +157,18 @@ async function renderView(viewId) {
     return;
   }
 
-  // Load original HTML page template dynamically
   try {
     const response = await fetch(`${viewId}.html`);
     if (!response.ok) throw new Error(`HTTP error ${response.status}`);
     const html = await response.text();
 
-    // Clean HTML content if it contains full <html> tags
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const bodyContent = doc.body ? doc.body.innerHTML : html;
 
     container.innerHTML = bodyContent;
 
-    // Re-execute embedded scripts inside the loaded template
+    // Execute scripts inside loaded view
     const scripts = container.querySelectorAll('script');
     scripts.forEach(oldScript => {
       const newScript = document.createElement('script');
@@ -181,11 +292,21 @@ function initDashboardCharts(m) {
   }
 }
 
-function renderFallbackView(container, viewId) {
-  container.innerHTML = `
-    <div class="glass-card">
-      <h2>${viewId.toUpperCase()} Page</h2>
-      <p style="color: #7f8c8d; margin-top: 10px;">Loaded view template ${viewId}.html successfully.</p>
-    </div>
-  `;
+// --- Toast System ---
+function showToast(message, type = 'info') {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast-msg ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success')}`;
+  toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> <span>${message}</span>`;
+
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
 }
+
+window.showToast = showToast;
