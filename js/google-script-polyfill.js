@@ -53,7 +53,7 @@
     }
 
     // Block update operations if user cannot edit
-    if (funcName.toLowerCase().includes('update') || funcName.toLowerCase().includes('save')) {
+    if (funcName.toLowerCase().includes('update') || funcName.toLowerCase().includes('save') || funcName.toLowerCase().includes('addnew')) {
       if (!window.canPerformAction('edit')) {
         throw new Error("Access Denied: Your current role is not authorized to edit records.");
       }
@@ -71,6 +71,9 @@
         return ['Maharashtra', 'Karnataka', 'Gujarat', 'Delhi', 'Uttar Pradesh', 'Jharkhand'];
       case 'custGetCities':
         return ['Mumbai', 'Bengaluru', 'Ahmedabad', 'Delhi', 'Renukoot', 'Jamshedpur'];
+      case 'custAddNewState':
+      case 'custAddNewCity':
+        return "success";
       case 'custGenerateCustomerId':
         return "CUST-" + Math.floor(100 + Math.random() * 900);
       case 'custAddNewCustomer':
@@ -91,6 +94,9 @@
         return ['Maharashtra', 'Karnataka', 'Gujarat', 'Delhi', 'Uttar Pradesh', 'Jharkhand'];
       case 'supGetCities':
         return ['Mumbai', 'Bengaluru', 'Ahmedabad', 'Delhi', 'Renukoot', 'Jamshedpur'];
+      case 'supAddNewState':
+      case 'supAddNewCity':
+        return "success";
       case 'supGenerateSupplierId':
         return "SUP-" + Math.floor(100 + Math.random() * 900);
       case 'supAddNewSupplier':
@@ -113,6 +119,10 @@
         return ['Metals', 'Wiring', 'Bearings', 'Polymer', 'Fasteners'];
       case 'itemGetSubcategories':
         return ['Steel', 'Aluminum', 'Copper', 'Sheets', 'Screws'];
+      case 'itemAddNewType':
+      case 'itemAddNewCategory':
+      case 'itemAddNewSubcategory':
+        return "success";
       case 'itemGenerateInventoryId':
         return "P" + Math.floor(10000 + Math.random() * 90000);
       case 'itemAddNewInventoryItem':
@@ -158,6 +168,9 @@
         return ['Paid', 'Pending', 'Partial', 'Overdue'];
       case 'poGetShippingStatuses':
         return ['Shipped', 'Delivered', 'Pending', 'In Transit'];
+      case 'poAddNewPMTStatus':
+      case 'poAddNewShippingStatus':
+        return "success";
       case 'poGeneratePOID':
         return "PO-" + Math.floor(1000 + Math.random() * 9000);
       case 'poGetPODetails':
