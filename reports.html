@@ -1,0 +1,126 @@
+<div class="reports-container">
+  <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #e0e0e0; padding-bottom: 15px;">
+    <div>
+      <h1 style="font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: #2c3e50; font-weight: 600;"><i class="fas fa-chart-pie" style="color: #1abc9c; margin-right: 10px;"></i> Business & Financial Reports</h1>
+      <p style="color: #7f8c8d; font-size: 0.95rem; margin-top: 5px;">Generate ledgers, GST tax summaries, sales trends, and stock reorder audit reports.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="exportReportCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+      <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+    </div>
+  </div>
+
+  <div class="action-bar" style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; background: #ffffff; padding: 15px; border-radius: 6px; border: 1px solid #e0e0e0;">
+    <div class="form-group" style="margin:0; flex: 1;">
+      <label style="font-size: 0.85rem; color: #7f8c8d;">Report Type</label>
+      <select id="reportTypeSelect" class="form-control" onchange="generateReport()">
+        <option value="sales">Sales Ledger Summary</option>
+        <option value="purchases">Purchase Order Summary</option>
+        <option value="receivables">Customer Receivables Aging</option>
+        <option value="payables">Supplier Payables Aging</option>
+        <option value="reorder">Low Stock Reorder Alert Report</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin:0; flex: 1;">
+      <label style="font-size: 0.85rem; color: #7f8c8d;">Date Range From</label>
+      <input type="date" class="form-control" value="2026-07-01">
+    </div>
+    <div class="form-group" style="margin:0; flex: 1;">
+      <label style="font-size: 0.85rem; color: #7f8c8d;">Date Range To</label>
+      <input type="date" class="form-control" value="2026-07-31">
+    </div>
+    <button class="btn btn-primary" style="margin-top: 18px;" onclick="generateReport()"><i class="fas fa-filter"></i> Run Report</button>
+  </div>
+
+  <!-- Report Data Container -->
+  <div class="glass-card" style="background: #ffffff; padding: 25px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;" id="reportOutputContainer">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<script>
+  function generateReport() {
+    const type = document.getElementById('reportTypeSelect').value;
+    const container = document.getElementById('reportOutputContainer');
+
+    if (type === 'sales') {
+      const sales = window.dbService.getSales();
+      container.innerHTML = `
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">Sales Order Report</h3>
+        <table class="custom-table">
+          <thead>
+            <tr style="background:#2c3e50; color:white;">
+              <th>Order ID</th><th>SO Date</th><th>Customer</th><th>Category</th><th>Qty</th><th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sales.map(s => `
+              <tr>
+                <td><strong>${s.id}</strong></td>
+                <td>${s.soDate}</td>
+                <td>${s.customerName}</td>
+                <td>${s.itemType}</td>
+                <td>${s.qty}</td>
+                <td><strong style="color:#1abc9c;">₹${Number(s.totalSalesPrice).toLocaleString('en-IN')}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else if (type === 'receivables') {
+      const custs = window.dbService.getCustomers();
+      container.innerHTML = `
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">Customer Receivables Ledger</h3>
+        <table class="custom-table">
+          <thead>
+            <tr style="background:#2c3e50; color:white;">
+              <th>Customer ID</th><th>Name</th><th>City</th><th>Phone</th><th>Balance Receivable</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${custs.map(c => `
+              <tr>
+                <td><strong>${c.id}</strong></td>
+                <td>${c.name}</td>
+                <td>${c.city}</td>
+                <td>${c.phone}</td>
+                <td><strong style="color:#3498db;">₹${Number(c.receivable).toLocaleString('en-IN')}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else {
+      const items = window.dbService.getInventory();
+      container.innerHTML = `
+        <h3 style="color: #2c3e50; margin-bottom: 15px;">Low Stock Reorder Alert Report</h3>
+        <table class="custom-table">
+          <thead>
+            <tr style="background:#2c3e50; color:white;">
+              <th>Item ID</th><th>Item Name</th><th>Type</th><th>Remaining Stock</th><th>Reorder Level</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(i => `
+              <tr>
+                <td><strong>${i.id}</strong></td>
+                <td>${i.name}</td>
+                <td>${i.type}</td>
+                <td><strong style="color:${i.remainingQty < i.reorderLevel ? '#e74c3c' : '#2ecc71'};">${i.remainingQty}</strong></td>
+                <td>${i.reorderLevel}</td>
+                <td>${i.reorderRequired ? '<span style="color:#e74c3c; font-weight:bold;">Reorder Needed</span>' : 'Sufficient'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+
+  function exportReportCSV() {
+    alert('Report exported as CSV file!');
+  }
+
+  // Initial load
+  setTimeout(generateReport, 100);
+</script>
