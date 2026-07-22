@@ -89,7 +89,7 @@
   .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text); }
   
-  /* Dark Mode text contrast overrides */
+  /* Dark Mode text contrast overrides — exclude action dropdown buttons */
   body.dark-mode .text-slate-950,
   body.dark-mode .text-slate-900,
   body.dark-mode .text-slate-800,
@@ -99,6 +99,14 @@
   body.dark-mode .text-slate-555,
   body.dark-mode .text-slate-500 {
     color: #d1d5db !important;
+  }
+
+  /* Action dropdown keeps its own proper text color in dark mode */
+  body.dark-mode #active-action-dropdown button {
+    color: #e2e8f0 !important;
+  }
+  body.dark-mode #active-action-dropdown button.text-rose-600 {
+    color: #f87171 !important;
   }
   
   body.dark-mode .text-slate-900.font-extrabold,
@@ -1755,11 +1763,17 @@ function g(id) { return document.getElementById(id); }
 
 function printContainerWithLoadedImages() {
   var printContainer = g('print-container');
-  if (!printContainer) { window.print(); return; }
+  if (!printContainer) { setTimeout(function(){ window.print(); }, 300); return; }
   var images = printContainer.querySelectorAll('img');
   var totalImages = images.length;
+  
+  var doPrint = function() {
+    // Small delay ensures modals/overlays are hidden before print dialog fires
+    setTimeout(function() { window.print(); }, 200);
+  };
+  
   if (totalImages === 0) {
-    window.print();
+    doPrint();
     return;
   }
   
@@ -1767,7 +1781,7 @@ function printContainerWithLoadedImages() {
   var done = function() {
     loaded++;
     if (loaded >= totalImages) {
-      window.print();
+      doPrint();
     }
   };
   
@@ -6387,8 +6401,7 @@ function showActionsDropdown(e, ref, type) {
   
   var html = '';
   if (type === 'sale') {
-    html += '<button onclick="viewSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
-          + '<button onclick="showQuickView(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
+    html += '<button onclick="showQuickView(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
           + '<button onclick="editSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Invoice</button>'
           + '<button onclick="printInvoice(\'' + ref + '\', false)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="printer" class="h-3.5 w-3.5 text-slate-500"></i> Print Invoice</button>'
           + '<button onclick="printPaymentReceipt(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="receipt" class="h-3.5 w-3.5 text-emerald-500"></i> Print Payment Slip</button>'
@@ -6396,15 +6409,13 @@ function showActionsDropdown(e, ref, type) {
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Invoice</button>';
   } else if (type === 'draft') {
-    html += '<button onclick="viewDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
-          + '<button onclick="showQuickView(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-blue-500"></i> Quick View</button>'
-          + '<button onclick="resumeDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="play" class="h-3.5 w-3.5 text-blue-500"></i> Resume Draft</button>'
+    html += '<button onclick="showQuickView(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
+          + '<button onclick="resumeDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="play" class="h-3.5 w-3.5 text-amber-500"></i> Resume Draft</button>'
           + '<button onclick="printInvoice(\'' + ref + '\', true)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="printer" class="h-3.5 w-3.5 text-slate-500"></i> Print Draft</button>'
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delDraft(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Draft</button>';
   } else if (type === 'product') {
-    html += '<button onclick="viewProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
-          + '<button onclick="editProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Product</button>'
+    html += '<button onclick="editProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Product</button>'
           + '<button onclick="openProductPriceHistory(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="history" class="h-3.5 w-3.5 text-indigo-500"></i> Price History</button>'
           + '<div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>'
           + '<button onclick="delProduct(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-rose-600 hover:text-rose-750 flex items-center gap-2"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Delete Product</button>';
