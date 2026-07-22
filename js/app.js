@@ -1,5 +1,5 @@
 /**
- * Main Application Routing, Sidebar Controller & Dashboard Renderer
+ * Main Application Routing, Sidebar Controller, SweetAlert2 Popups & Dashboard Renderer
  */
 
 window.currentRole = localStorage.getItem('user_role') || 'Administrator';
@@ -35,7 +35,14 @@ function initNavigation() {
       if (isPageAllowedForRole(page)) {
         switchView(page);
       } else {
-        showToast(`Access Denied: Your role (${window.currentRole}) is not authorized to view ${page.toUpperCase()}.`, 'error');
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Access Denied',
+            text: `Your current role (${window.currentRole}) is not authorized to view ${page.toUpperCase()}.`,
+            confirmButtonColor: '#1abc9c'
+          });
+        }
       }
     });
   });
@@ -77,7 +84,16 @@ function switchRole(newRole) {
   else if (newRole === 'Inventory Clerk') window.currentUserName = 'Vikram Singh (Inventory Clerk)';
   else window.currentUserName = 'Suresh Patel (Accountant)';
 
-  showToast(`Switched active user to: ${window.currentUserName}`, 'info');
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      icon: 'success',
+      title: 'User Role Switched',
+      text: `Active Account: ${window.currentUserName}`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
+
   applyRolePermissions();
 
   const currentHash = window.location.hash.replace('#', '') || 'dashboard';
@@ -130,13 +146,27 @@ window.canPerformAction = function(actionType) {
   if (role === 'Administrator') return true;
 
   if (actionType === 'delete') {
-    showToast(`Permission Denied: Only Administrators are authorized to DELETE records.`, 'error');
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Permission Denied',
+        text: 'Only Administrators are authorized to DELETE records.',
+        confirmButtonColor: '#e74c3c'
+      });
+    }
     return false;
   }
 
   if (actionType === 'edit') {
     if (role === 'Accountant') {
-      showToast(`Permission Denied: Accountants are in Read-Only mode.`, 'error');
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Read-Only Mode',
+          text: 'Accountant role is restricted to Read-Only mode.',
+          confirmButtonColor: '#e74c3c'
+        });
+      }
       return false;
     }
     return true;
@@ -180,7 +210,7 @@ async function renderView(viewId) {
   }
 }
 
-// --- Dashboard View Matching Original Apps Script Screenshot ---
+// --- Dashboard View Matching Viewport Height ---
 function renderDashboardView(container) {
   const m = window.dbService.getDashboardMetrics();
 
@@ -214,12 +244,12 @@ function renderDashboardView(container) {
         <div class="dash-kpi-val">₹${m.totalPayable.toLocaleString('en-IN')}</div>
       </div>
       <div class="dash-kpi-card">
-        <div class="dash-kpi-title"><i class="fas fa-map-marker-alt"></i> Top Sales Location</div>
-        <div class="dash-kpi-val" style="font-size: 0.9rem;">${m.topLocation}</div>
+        <div class="dash-kpi-title"><i class="fas fa-map-marker-alt"></i> Top Location</div>
+        <div class="dash-kpi-val" style="font-size: 0.88rem;">${m.topLocation}</div>
       </div>
       <div class="dash-kpi-card">
         <div class="dash-kpi-title"><i class="fas fa-crown"></i> Top Selling Item</div>
-        <div class="dash-kpi-val" style="font-size: 0.9rem;">${m.topItem}</div>
+        <div class="dash-kpi-val" style="font-size: 0.88rem;">${m.topItem}</div>
       </div>
     </div>
 
@@ -229,16 +259,16 @@ function renderDashboardView(container) {
       <div class="dash-col">
         <div class="dash-card">
           <div class="dash-card-title">Sales Trend</div>
-          <div id="chartSalesTrend" style="min-height: 220px;"></div>
+          <div id="chartSalesTrend" style="height: 160px;"></div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <div class="dash-card">
             <div class="dash-card-title">Sales By Location</div>
-            <div id="chartSalesByLocation" style="min-height: 180px;"></div>
+            <div id="chartSalesByLocation" style="height: 140px;"></div>
           </div>
           <div class="dash-card">
             <div class="dash-card-title">Sales By Category</div>
-            <div id="chartSalesByCategory" style="min-height: 180px;"></div>
+            <div id="chartSalesByCategory" style="height: 140px;"></div>
           </div>
         </div>
       </div>
@@ -247,25 +277,25 @@ function renderDashboardView(container) {
       <div class="dash-col">
         <div class="dash-card tall">
           <div class="dash-card-title">Top 10 Customers</div>
-          <div id="chartTopCustomers" style="min-height: 480px;"></div>
+          <div id="chartTopCustomers" style="height: 350px;"></div>
         </div>
       </div>
 
       <!-- Right Column -->
       <div class="dash-col">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <div class="dash-card">
             <div class="dash-card-title">Purchase By Location</div>
-            <div id="chartPurchaseByLocation" style="min-height: 180px;"></div>
+            <div id="chartPurchaseByLocation" style="height: 140px;"></div>
           </div>
           <div class="dash-card">
             <div class="dash-card-title">Purchase By Category</div>
-            <div id="chartPurchaseByCategory" style="min-height: 180px;"></div>
+            <div id="chartPurchaseByCategory" style="height: 140px;"></div>
           </div>
         </div>
         <div class="dash-card">
           <div class="dash-card-title">Sales By City</div>
-          <div id="chartSalesByCity" style="min-height: 220px;"></div>
+          <div id="chartSalesByCity" style="height: 160px;"></div>
         </div>
       </div>
     </div>
@@ -282,7 +312,7 @@ function initDashboardApexCharts(m) {
   // 1. Sales Trend
   new ApexCharts(document.querySelector("#chartSalesTrend"), {
     series: [{ name: "Sales (₹)", data: [120000, 150000, 180000, 220000, 270000, 310000] }],
-    chart: { type: 'area', height: 210, toolbar: { show: false } },
+    chart: { type: 'area', height: 160, toolbar: { show: false } },
     colors: ['#1abc9c'],
     stroke: { curve: 'smooth', width: 2 },
     fill: { opacity: 0.2 },
@@ -292,7 +322,7 @@ function initDashboardApexCharts(m) {
   // 2. Sales By Location
   new ApexCharts(document.querySelector("#chartSalesByLocation"), {
     series: [40, 25, 20, 15],
-    chart: { type: 'donut', height: 180 },
+    chart: { type: 'donut', height: 140 },
     labels: ['Mumbai', 'Bengaluru', 'Ahmedabad', 'Delhi'],
     colors: ['#1abc9c', '#3498db', '#f39c12', '#e74c3c'],
     legend: { show: false }
@@ -301,29 +331,29 @@ function initDashboardApexCharts(m) {
   // 3. Sales By Category
   new ApexCharts(document.querySelector("#chartSalesByCategory"), {
     series: [45, 30, 15, 10],
-    chart: { type: 'pie', height: 180 },
+    chart: { type: 'pie', height: 140 },
     labels: ['Raw Material', 'Electrical', 'Components', 'Plastics'],
     colors: ['#3498db', '#1abc9c', '#f39c12', '#9b59b6'],
     legend: { show: false }
   }).render();
 
-  // 4. Top 10 Customers (Clean X-axis labels)
+  // 4. Top 10 Customers (Tall Card)
   new ApexCharts(document.querySelector("#chartTopCustomers"), {
     series: [{ name: "Revenue (₹)", data: [270000, 180000, 180000, 170000, 140000, 120000, 95000, 80000, 65000, 45000] }],
-    chart: { type: 'bar', height: 440, toolbar: { show: false } },
-    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '65%' } },
+    chart: { type: 'bar', height: 350, toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '60%' } },
     colors: ['#34495e'],
     xaxis: {
       categories: ['Sunrise Fab', 'Vertex Tech', 'Global Eng', 'Apex Builders', 'Ultra Tech', 'L&T Infra', 'Godrej', 'Tata Motors', 'Mahindra', 'Reliance'],
       labels: { formatter: (val) => (val / 1000) + 'k' }
     },
-    grid: { padding: { bottom: 15 } }
+    grid: { padding: { bottom: 10 } }
   }).render();
 
   // 5. Purchase By Location
   new ApexCharts(document.querySelector("#chartPurchaseByLocation"), {
     series: [50, 30, 20],
-    chart: { type: 'donut', height: 180 },
+    chart: { type: 'donut', height: 140 },
     labels: ['Jharkhand', 'UP', 'Gujarat'],
     colors: ['#f39c12', '#3498db', '#1abc9c'],
     legend: { show: false }
@@ -332,7 +362,7 @@ function initDashboardApexCharts(m) {
   // 6. Purchase By Category
   new ApexCharts(document.querySelector("#chartPurchaseByCategory"), {
     series: [{ name: "Purchases", data: [325000, 280000, 270000] }],
-    chart: { type: 'bar', height: 180, toolbar: { show: false } },
+    chart: { type: 'bar', height: 140, toolbar: { show: false } },
     colors: ['#e74c3c'],
     xaxis: { categories: ['Raw Material', 'Electrical', 'Components'] }
   }).render();
@@ -347,26 +377,26 @@ function initDashboardApexCharts(m) {
         { x: 'Delhi', y: 270000 }
       ]
     }],
-    chart: { type: 'treemap', height: 210, toolbar: { show: false } },
+    chart: { type: 'treemap', height: 160, toolbar: { show: false } },
     colors: ['#1abc9c', '#3498db', '#f39c12', '#9b59b6']
   }).render();
 }
 
-// --- Toast System ---
+// --- SweetAlert Toast Alert ---
 function showToast(message, type = 'info') {
-  let container = document.getElementById('toastContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toastContainer';
-    document.body.appendChild(container);
+  if (typeof Swal !== 'undefined') {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+    Toast.fire({
+      icon: type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success'),
+      title: message
+    });
   }
-
-  const toast = document.createElement('div');
-  toast.className = `toast-msg ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success')}`;
-  toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> <span>${message}</span>`;
-
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
 }
 
 window.showToast = showToast;
