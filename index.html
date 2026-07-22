@@ -4968,36 +4968,6 @@ function renderDailyTally() {
       + '<th class="p-1.5 text-center border-r border-slate-350 dark:border-slate-800 text-[10px] font-bold tracking-tight">Total Qty</th>';
   });
 
-  // Chart Grid Section
-  if (matchedSales.length) {
-    html += '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">'
-      + '  <div class="glass-card p-5 rounded-2xl shadow-sm">'
-      + '    <div class="flex items-center gap-2 mb-4">'
-      + '      <div class="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-955/40 text-brand-600 dark:text-brand-450 flex items-center justify-center"><i data-lucide="pie-chart" class="h-4 w-4"></i></div>'
-      + '      <div>'
-      + '        <h4 class="font-bold text-slate-800 dark:text-white text-xs">Cylinder Sales Distribution</h4>'
-      + '        <span class="text-[10px] text-slate-500">Quantities sold by cylinder type</span>'
-      + '      </div>'
-      + '    </div>'
-      + '    <div style="height: 180px; position: relative;">'
-      + '      <canvas id="tallyRefillChart"></canvas>'
-      + '    </div>'
-      + '  </div>'
-      + '  <div class="glass-card p-5 rounded-2xl shadow-sm">'
-      + '    <div class="flex items-center gap-2 mb-4">'
-      + '      <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-955/40 text-emerald-600 dark:text-emerald-450 flex items-center justify-center"><i data-lucide="wallet" class="h-4 w-4"></i></div>'
-      + '      <div>'
-      + '        <h4 class="font-bold text-slate-800 dark:text-white text-xs">Revenue Collection Split</h4>'
-      + '        <span class="text-[10px] text-slate-500">Cash vs Online vs Dues</span>'
-      + '      </div>'
-      + '    </div>'
-      + '    <div style="height: 180px; position: relative;">'
-      + '      <canvas id="tallyPaymentChart"></canvas>'
-      + '      <div id="noPaymentDataMsg" class="hidden absolute inset-0 flex items-center justify-center text-slate-500 text-xs">No payments logged today</div>'
-      + '    </div>'
-      + '  </div>'
-      + '</div>';
-  }
 
   // Main Sales Table
   html += '<div class="glass-card rounded-xl shadow-sm overflow-hidden">'
