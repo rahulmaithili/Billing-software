@@ -5886,9 +5886,10 @@ function calcSaleInvoiceTotals() {
     }
   }
   
-  // Count configured paid online rows
+  // Count configured due online rows
   var onlineRows = document.querySelectorAll('#s-online-details-list > div');
-  var paidOnlineCount = 0;
+  var dueOnlineCount = 0;
+  var hasPaidOnlineRow = false;
   
   onlineRows.forEach(function(row) {
     var numInput = row.querySelector('.s-ond-num');
@@ -5909,10 +5910,13 @@ function calcSaleInvoiceTotals() {
         numInput.title = '';
       }
       
-      // Consider it paid if not empty and type is not Due
-      var isPaid = numVal.length > 0 && typeVal.indexOf('-Due') === -1;
-      if (isPaid) {
-        paidOnlineCount++;
+      // Check if it is a due row
+      if (numVal.length > 0) {
+        if (typeVal.indexOf('-Due') !== -1) {
+          dueOnlineCount++;
+        } else {
+          hasPaidOnlineRow = true;
+        }
       }
     }
   });
@@ -5921,8 +5925,11 @@ function calcSaleInvoiceTotals() {
   cashCylinders.forEach(function(r) { expectedCash += r; });
   
   var expectedOnline = 0;
-  for (var i = 0; i < Math.min(paidOnlineCount, onlineCylinders.length); i++) {
-    expectedOnline += onlineCylinders[i];
+  if (onlineRows.length > 0 && (hasPaidOnlineRow || dueOnlineCount > 0)) {
+    var paidCylCount = Math.max(0, onlineCylinders.length - dueOnlineCount);
+    for (var i = 0; i < paidCylCount; i++) {
+      expectedOnline += onlineCylinders[i];
+    }
   }
   
   // Auto-populate inputs if manual override is not set
@@ -6061,13 +6068,13 @@ function submitSale(isDraft) {
       }
     });
     
-    if (enteredCount !== totalOnlineQty) {
+    if (enteredCount === 0) {
       Swal.fire({
-        title: 'Online Deliveries Mismatch',
-        text: 'You have specified ' + totalOnlineQty + ' online cylinders in the items list, but configured details for ' + enteredCount + ' consumer numbers. Please configure details for all online cylinders before saving.',
+        title: 'Online Deliveries Details Required',
+        text: 'Please configure at least one online delivery consumer number / payment detail before saving.',
         icon: 'warning',
         confirmButtonColor: '#ea580c',
-        confirmButtonText: 'Go Back & Fix'
+        confirmButtonText: 'Go Back & Add'
       });
       return;
     }
