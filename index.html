@@ -7,9 +7,9 @@
 <title>Shiv Shakti HP Gas Agency — Enterprise Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide/dist/umd/lucide.min.js"></script>
 
 <!-- Firebase JS SDK (Compat) -->
@@ -1237,49 +1237,79 @@
 
     <!-- ═══ REPORTS ══════════════════════════════════════════════════ -->
     <div class="page" id="p-reports">
-      <div class="glass-card rounded-xl p-5 shadow-sm mb-5 flex flex-wrap gap-4 items-end">
-        <div>
-          <label class="text-[11px] font-bold text-slate-500 block mb-1">From Date</label>
-          <input type="date" id="rp-start" class="rounded-lg py-2 px-3 text-sm">
+
+      <!-- Report Type Tabs -->
+      <div class="flex gap-2 mb-5 overflow-x-auto pb-1 custom-scrollbar">
+        <button onclick="switchReport('revenue')" id="rpt-tab-revenue" class="rpt-tab active-rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-brand-600 text-white shadow-sm">
+          <i data-lucide="bar-chart-2" class="h-3.5 w-3.5"></i> Revenue Chart
+        </button>
+        <button onclick="switchReport('driver')" id="rpt-tab-driver" class="rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i data-lucide="truck" class="h-3.5 w-3.5"></i> Driver Performance
+        </button>
+        <button onclick="switchReport('gst')" id="rpt-tab-gst" class="rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i data-lucide="landmark" class="h-3.5 w-3.5"></i> GST Report
+        </button>
+        <button onclick="switchReport('party')" id="rpt-tab-party" class="rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i data-lucide="users" class="h-3.5 w-3.5"></i> Party-wise Report
+        </button>
+        <button onclick="switchReport('custom')" id="rpt-tab-custom" class="rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i data-lucide="sliders" class="h-3.5 w-3.5"></i> Custom Report
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="glass-card rounded-xl p-4 shadow-sm mb-5 flex flex-wrap gap-3 items-end" id="rpt-filter-bar">
+        <div id="rpt-filter-daterange" class="flex gap-3">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 block mb-1">From Date</label>
+            <input type="date" id="rp-start" class="rounded-lg py-2 px-3 text-sm">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 block mb-1">To Date</label>
+            <input type="date" id="rp-end" class="rounded-lg py-2 px-3 text-sm">
+          </div>
         </div>
-        <div>
-          <label class="text-[11px] font-bold text-slate-500 block mb-1">To Date</label>
-          <input type="date" id="rp-end" class="rounded-lg py-2 px-3 text-sm">
-        </div>
-        <div>
+        <div id="rpt-filter-party">
           <label class="text-[11px] font-bold text-slate-500 block mb-1">Party / Vendor</label>
           <select id="rp-party" class="rounded-lg py-2 px-3 text-sm w-44">
-            <option value="ALL">All Parties / Vendors</option>
+            <option value="ALL">All Parties</option>
           </select>
         </div>
-        <div>
-          <label class="text-[11px] font-bold text-slate-500 block mb-1">Driver Filter</label>
-          <select id="rp-driver" class="rounded-lg py-2 px-3 text-sm w-44">
+        <div id="rpt-filter-driver">
+          <label class="text-[11px] font-bold text-slate-500 block mb-1">Driver</label>
+          <select id="rp-driver" class="rounded-lg py-2 px-3 text-sm w-40">
             <option value="ALL">All Drivers</option>
           </select>
         </div>
-        <div>
-          <label class="text-[11px] font-bold text-slate-500 block mb-1">Product Filter</label>
-          <select id="rp-entity" class="rounded-lg py-2 px-3 text-sm w-44">
+        <div id="rpt-filter-product">
+          <label class="text-[11px] font-bold text-slate-500 block mb-1">Product</label>
+          <select id="rp-entity" class="rounded-lg py-2 px-3 text-sm w-40">
             <option value="ALL">All Products</option>
           </select>
         </div>
-        <div>
+        <div id="rpt-filter-consumer" class="hidden">
           <label class="text-[11px] font-bold text-slate-500 block mb-1">Consumer No.</label>
-          <input type="text" id="rp-consumer-no" placeholder="Search Consumer No..." class="rounded-lg py-2 px-3 text-sm w-40">
+          <input type="text" id="rp-consumer-no" placeholder="Search..." class="rounded-lg py-2 px-3 text-sm w-36">
         </div>
-        <button onclick="generateReport()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-5 rounded-lg text-sm flex items-center gap-2 shadow-md shadow-brand-500/20">
-          <i data-lucide="play" class="h-4 w-4"></i> Generate
-        </button>
+        <div class="flex gap-2 ml-auto">
+          <button onclick="exportReportExcel()" id="rpt-excel-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-1.5">
+            <i data-lucide="download" class="h-4 w-4"></i> Export CSV
+          </button>
+          <button onclick="runCurrentReport()" class="bg-brand-600 hover:bg-brand-700 text-white font-bold py-2 px-5 rounded-lg text-sm flex items-center gap-2 shadow-md shadow-brand-500/20">
+            <i data-lucide="play" class="h-4 w-4"></i> Generate
+          </button>
+        </div>
       </div>
+
+      <!-- Report Output -->
       <div id="rp-output">
         <div class="glass-card rounded-xl p-12 text-center text-slate-500">
-          <i data-lucide="bar-chart-2" class="h-10 w-10 mx-auto mb-3 text-slate-600"></i>
-          <p>Select parameters and click generate to view custom analytics breakdowns.</p>
+          <i data-lucide="bar-chart-2" class="h-10 w-10 mx-auto mb-3 text-slate-400"></i>
+          <p class="font-semibold">Select a report type above and click Generate</p>
+          <p class="text-xs mt-1 text-slate-400">Revenue Chart loads automatically</p>
         </div>
       </div>
     </div>
-
     <!-- ═══ DAILY TALLY REPORT ═════════════════════════════════════ -->
     <div class="page" id="p-daily-tally">
       <div class="glass-card rounded-xl p-5 shadow-sm mb-5 flex flex-wrap gap-4 items-end justify-between">
@@ -7191,6 +7221,411 @@ function updateDashboardDuesAlert() {
     alertEl.classList.add('hidden');
   }
 }
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 2 — REPORT TAB SWITCHER
+// ════════════════════════════════════════════════════════════════
+var CURRENT_REPORT = 'revenue';
+var REPORT_DATA_CACHE = null;
+
+function switchReport(type) {
+  CURRENT_REPORT = type;
+  REPORT_DATA_CACHE = null;
+  // Update tab styles
+  document.querySelectorAll('.rpt-tab').forEach(function(btn) {
+    btn.className = 'rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+  });
+  var activeTab = g('rpt-tab-' + type);
+  if (activeTab) activeTab.className = 'rpt-tab active-rpt-tab px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-1.5 transition-all bg-brand-600 text-white shadow-sm';
+  
+  // Show/hide filters based on report type
+  var showParty = (type === 'party' || type === 'custom');
+  var showDriver = (type === 'driver' || type === 'custom');
+  var showProduct = (type === 'custom');
+  var showConsumer = (type === 'custom');
+  
+  ['rpt-filter-party'].forEach(function(id) {
+    var el = g(id); if (el) el.classList.toggle('hidden', !showParty);
+  });
+  ['rpt-filter-driver'].forEach(function(id) {
+    var el = g(id); if (el) el.classList.toggle('hidden', !showDriver);
+  });
+  ['rpt-filter-product'].forEach(function(id) {
+    var el = g(id); if (el) el.classList.toggle('hidden', !showProduct);
+  });
+  ['rpt-filter-consumer'].forEach(function(id) {
+    var el = g(id); if (el) el.classList.toggle('hidden', !showConsumer);
+  });
+  
+  runCurrentReport();
+}
+
+function runCurrentReport() {
+  var type = CURRENT_REPORT;
+  if (type === 'revenue')  renderRevenueChart();
+  else if (type === 'driver') renderDriverReport();
+  else if (type === 'gst')    renderGstReport();
+  else if (type === 'party')  renderPartyReport();
+  else if (type === 'custom') generateReport();
+}
+
+function renderReports() {
+  switchReport('revenue');
+}
+
+// ────────────────────────────────────────────────────────────────
+//  PHASE 2A — MONTHLY REVENUE CHART
+// ────────────────────────────────────────────────────────────────
+var revenueChartInstance = null;
+
+function renderRevenueChart() {
+  var start = g('rp-start').value;
+  var end   = g('rp-end').value;
+  
+  // Group sales by month
+  var monthly = {};
+  DB.sales.forEach(function(s) {
+    var parts = (s.date || '').split('-');
+    if (parts.length !== 3) return;
+    var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+    if (start) { var sd = new Date(start); if (d < sd) return; }
+    if (end)   { var ed = new Date(end); ed.setHours(23,59,59); if (d > ed) return; }
+    var key = parts[2] + '-' + parts[1]; // YYYY-MM
+    if (!monthly[key]) monthly[key] = { revenue: 0, collected: 0, dues: 0, count: 0 };
+    monthly[key].revenue   += (s.invoiceTotal || 0);
+    monthly[key].collected += (s.totalPaid    || 0);
+    monthly[key].dues      += (s.balanceDue   || 0);
+    monthly[key].count++;
+  });
+
+  var labels = Object.keys(monthly).sort();
+  var isDark = document.body.classList.contains('dark-mode');
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var displayLabels = labels.map(function(k) {
+    var p = k.split('-'); return monthNames[parseInt(p[1])-1] + ' ' + p[0].slice(2);
+  });
+
+  // KPI summary
+  var totalRev = labels.reduce(function(a,k){ return a + monthly[k].revenue; }, 0);
+  var totalCol = labels.reduce(function(a,k){ return a + monthly[k].collected; }, 0);
+  var totalDue = labels.reduce(function(a,k){ return a + monthly[k].dues; }, 0);
+  var totalInv = labels.reduce(function(a,k){ return a + monthly[k].count; }, 0);
+
+  var html = '<div class="space-y-5">'
+    // KPI row
+    + '<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">'
+    + '  <div class="glass-card p-4 rounded-2xl shadow-sm text-center"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Invoices</p><h3 class="text-2xl font-extrabold text-slate-800 dark:text-white mt-1">' + totalInv + '</h3></div>'
+    + '  <div class="glass-card p-4 rounded-2xl shadow-sm text-center"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Revenue</p><h3 class="text-xl font-extrabold text-brand-600 mt-1">' + fmt(totalRev) + '</h3></div>'
+    + '  <div class="glass-card p-4 rounded-2xl shadow-sm text-center"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Collected</p><h3 class="text-xl font-extrabold text-emerald-600 mt-1">' + fmt(totalCol) + '</h3></div>'
+    + '  <div class="glass-card p-4 rounded-2xl shadow-sm text-center"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Outstanding Dues</p><h3 class="text-xl font-extrabold text-rose-600 mt-1">' + fmt(totalDue) + '</h3></div>'
+    + '</div>'
+    // Chart
+    + '<div class="glass-card rounded-2xl p-5 shadow-sm">'
+    + '  <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">'
+    + '    <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm"><i data-lucide="bar-chart-2" class="h-4 w-4 text-brand-600"></i> Monthly Revenue Trend</h4>'
+    + '    <span class="text-[10px] text-slate-500 font-semibold">' + (labels.length ? labels[0] + ' → ' + labels[labels.length-1] : 'All time') + '</span>'
+    + '  </div>'
+    + '  <div style="position:relative;height:300px;"><canvas id="revenue-chart-canvas"></canvas></div>'
+    + '</div>'
+    // Monthly breakdown table
+    + '<div class="glass-card rounded-2xl shadow-sm overflow-hidden">'
+    + '  <div class="p-4 font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 text-sm"><i data-lucide="calendar" class="h-4 w-4 text-brand-600"></i> Month-wise Breakdown</div>'
+    + '  <div class="overflow-x-auto"><table class="w-full text-left text-xs">'
+    + '  <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">'
+    + '    <th class="p-3">Month</th><th class="p-3 text-center">Invoices</th><th class="p-3 text-right">Revenue</th><th class="p-3 text-right text-emerald-600">Collected</th><th class="p-3 text-right text-rose-600">Dues</th>'
+    + '  </tr></thead><tbody>';
+  
+  labels.forEach(function(k, i) {
+    var m = monthly[k];
+    html += '<tr class="border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/30">'
+      + '<td class="p-3 font-bold text-slate-800 dark:text-white">' + displayLabels[i] + '</td>'
+      + '<td class="p-3 text-center font-semibold">' + m.count + '</td>'
+      + '<td class="p-3 text-right font-bold text-brand-600">' + fmt(m.revenue) + '</td>'
+      + '<td class="p-3 text-right text-emerald-600 font-semibold">' + fmt(m.collected) + '</td>'
+      + '<td class="p-3 text-right text-rose-600 font-semibold">' + fmt(m.dues) + '</td>'
+      + '</tr>';
+  });
+
+  html += labels.length ? '' : '<tr><td colspan="5" class="p-6 text-center text-slate-400">No data found. Add some sales first.</td></tr>';
+  html += '</tbody></table></div></div></div>';
+
+  g('rp-output').innerHTML = html;
+  REPORT_DATA_CACHE = { type: 'revenue', labels: displayLabels, monthly: monthly, labels_raw: labels };
+
+  // Draw Chart
+  setTimeout(function() {
+    var canvas = document.getElementById('revenue-chart-canvas');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (revenueChartInstance) { revenueChartInstance.destroy(); revenueChartInstance = null; }
+    var textColor = isDark ? '#94a3b8' : '#64748b';
+    var gridColor = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.06)';
+    revenueChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: displayLabels,
+        datasets: [
+          { label: 'Revenue', data: labels.map(function(k){ return monthly[k].revenue; }), backgroundColor: 'rgba(234,88,12,0.75)', borderRadius: 6, borderSkipped: false },
+          { label: 'Collected', data: labels.map(function(k){ return monthly[k].collected; }), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6, borderSkipped: false },
+          { label: 'Dues', data: labels.map(function(k){ return monthly[k].dues; }), backgroundColor: 'rgba(244,63,94,0.6)', borderRadius: 6, borderSkipped: false }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor, font: { family: 'Outfit', weight: '600', size: 11 } } } },
+        scales: {
+          x: { ticks: { color: textColor, font: { family: 'Outfit' } }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor, font: { family: 'Outfit' }, callback: function(v){ return '₹' + (v/1000).toFixed(0) + 'k'; } }, grid: { color: gridColor } }
+        }
+      }
+    });
+  }, 100);
+  lucide.createIcons();
+}
+
+// ────────────────────────────────────────────────────────────────
+//  PHASE 2B — DRIVER PERFORMANCE REPORT
+// ────────────────────────────────────────────────────────────────
+function renderDriverReport() {
+  var start = g('rp-start').value;
+  var end   = g('rp-end').value;
+
+  var driverMap = {};
+  DB.sales.forEach(function(s) {
+    var parts = (s.date || '').split('-');
+    if (parts.length === 3) {
+      var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+      if (start) { var sd = new Date(start); if (d < sd) return; }
+      if (end)   { var ed = new Date(end); ed.setHours(23,59,59); if (d > ed) return; }
+    }
+    var drv = s.driver || 'Unassigned';
+    if (!driverMap[drv]) driverMap[drv] = { invoices: {}, revenue: 0, collected: 0, qty: 0 };
+    driverMap[drv].invoices[s.receiptNo] = true;
+    driverMap[drv].revenue   += (s.invoiceTotal || 0);
+    driverMap[drv].collected += (s.totalPaid    || 0);
+    driverMap[drv].qty       += (s.totalQty     || 0);
+  });
+
+  var drvNames = Object.keys(driverMap).sort();
+  var html = '<div class="space-y-5">'
+    + '<div class="glass-card rounded-2xl shadow-sm overflow-hidden">'
+    + '  <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-800 dark:text-white text-sm"><i data-lucide="truck" class="h-4 w-4 text-brand-600"></i> Driver Performance Summary</div>'
+    + '  <div class="overflow-x-auto"><table class="w-full text-left text-sm">'
+    + '  <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">'
+    + '    <th class="p-3.5">Driver Name</th><th class="p-3.5 text-center">Deliveries</th><th class="p-3.5 text-center">Cylinders</th><th class="p-3.5 text-right">Revenue</th><th class="p-3.5 text-right text-emerald-600">Collected</th><th class="p-3.5 text-right text-rose-600">Dues</th><th class="p-3.5 text-center">Efficiency</th>'
+    + '  </tr></thead><tbody>';
+
+  drvNames.forEach(function(drv) {
+    var d = driverMap[drv];
+    var invoiceCount = Object.keys(d.invoices).length;
+    var dues = d.revenue - d.collected;
+    var efficiency = d.revenue > 0 ? Math.round((d.collected / d.revenue) * 100) : 0;
+    var effColor = efficiency >= 90 ? 'text-emerald-600' : efficiency >= 70 ? 'text-amber-600' : 'text-rose-600';
+    html += '<tr class="border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/30">'
+      + '<td class="p-3.5 font-bold text-slate-800 dark:text-white flex items-center gap-2"><div class="h-8 w-8 rounded-lg bg-brand-100 dark:bg-brand-950/30 flex items-center justify-center text-brand-600 font-extrabold text-xs">' + (drv[0]||'?') + '</div>' + drv + '</td>'
+      + '<td class="p-3.5 text-center font-bold">' + invoiceCount + '</td>'
+      + '<td class="p-3.5 text-center font-semibold text-amber-600">' + d.qty + '</td>'
+      + '<td class="p-3.5 text-right font-bold text-brand-600">' + fmt(d.revenue) + '</td>'
+      + '<td class="p-3.5 text-right text-emerald-600 font-semibold">' + fmt(d.collected) + '</td>'
+      + '<td class="p-3.5 text-right text-rose-600 font-semibold">' + fmt(dues) + '</td>'
+      + '<td class="p-3.5 text-center"><span class="font-extrabold text-sm ' + effColor + '">' + efficiency + '%</span></td>'
+      + '</tr>';
+  });
+
+  html += drvNames.length ? '' : '<tr><td colspan="7" class="p-6 text-center text-slate-400">No delivery data found.</td></tr>';
+  html += '</tbody></table></div></div></div>';
+  g('rp-output').innerHTML = html;
+  REPORT_DATA_CACHE = { type: 'driver', driverMap: driverMap, drvNames: drvNames };
+  lucide.createIcons();
+}
+
+// ────────────────────────────────────────────────────────────────
+//  PHASE 2C — GST REPORT (Monthly CGST + SGST)
+// ────────────────────────────────────────────────────────────────
+function renderGstReport() {
+  var start = g('rp-start').value;
+  var end   = g('rp-end').value;
+  var gstRate = (DB.company && DB.company.gstRate) ? parseFloat(DB.company.gstRate) : 5; // default 5%
+  var halfGst = gstRate / 2;
+
+  var monthly = {};
+  DB.sales.forEach(function(s) {
+    var parts = (s.date || '').split('-');
+    if (parts.length !== 3) return;
+    var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+    if (start) { var sd = new Date(start); if (d < sd) return; }
+    if (end)   { var ed = new Date(end); ed.setHours(23,59,59); if (d > ed) return; }
+    var key = parts[2] + '-' + parts[1];
+    if (!monthly[key]) monthly[key] = { taxable: 0, cgst: 0, sgst: 0, total: 0, count: 0 };
+    // Back-calculate taxable from invoice total
+    var inv = s.invoiceTotal || 0;
+    var taxable = inv / (1 + gstRate / 100);
+    var cgst = taxable * (halfGst / 100);
+    var sgst = taxable * (halfGst / 100);
+    monthly[key].taxable += taxable;
+    monthly[key].cgst    += cgst;
+    monthly[key].sgst    += sgst;
+    monthly[key].total   += inv;
+    monthly[key].count++;
+  });
+
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var labels = Object.keys(monthly).sort();
+  var html = '<div class="space-y-5">'
+    + '<div class="glass-card rounded-2xl p-4 shadow-sm flex items-center gap-3 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/20">'
+    + '  <i data-lucide="info" class="h-5 w-5 text-indigo-600 shrink-0"></i>'
+    + '  <p class="text-xs text-indigo-700 dark:text-indigo-300">GST calculated at <b>' + gstRate + '%</b> (CGST ' + halfGst + '% + SGST ' + halfGst + '%). Update GST rate in Company Settings.</p>'
+    + '</div>'
+    + '<div class="glass-card rounded-2xl shadow-sm overflow-hidden">'
+    + '  <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-800 dark:text-white text-sm"><i data-lucide="landmark" class="h-4 w-4 text-indigo-600"></i> Month-wise GST Breakdown</div>'
+    + '  <div class="overflow-x-auto"><table class="w-full text-left text-sm">'
+    + '  <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">'
+    + '    <th class="p-3.5">Month</th><th class="p-3.5 text-center">Invoices</th><th class="p-3.5 text-right">Taxable Value</th><th class="p-3.5 text-right text-indigo-600">CGST (' + halfGst + '%)</th><th class="p-3.5 text-right text-purple-600">SGST (' + halfGst + '%)</th><th class="p-3.5 text-right text-brand-600">Total GST</th><th class="p-3.5 text-right">Invoice Total</th>'
+    + '  </tr></thead><tbody>';
+
+  var totTaxable = 0, totCgst = 0, totSgst = 0, totInv = 0;
+  labels.forEach(function(k) {
+    var m = monthly[k];
+    var p = k.split('-');
+    var label = monthNames[parseInt(p[1])-1] + ' ' + p[0];
+    totTaxable += m.taxable; totCgst += m.cgst; totSgst += m.sgst; totInv += m.total;
+    html += '<tr class="border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/30">'
+      + '<td class="p-3.5 font-bold text-slate-800 dark:text-white">' + label + '</td>'
+      + '<td class="p-3.5 text-center">' + m.count + '</td>'
+      + '<td class="p-3.5 text-right font-semibold">' + fmt(m.taxable) + '</td>'
+      + '<td class="p-3.5 text-right text-indigo-600 font-semibold">' + fmt(m.cgst) + '</td>'
+      + '<td class="p-3.5 text-right text-purple-600 font-semibold">' + fmt(m.sgst) + '</td>'
+      + '<td class="p-3.5 text-right text-brand-600 font-bold">' + fmt(m.cgst + m.sgst) + '</td>'
+      + '<td class="p-3.5 text-right font-semibold">' + fmt(m.total) + '</td>'
+      + '</tr>';
+  });
+
+  // Total row
+  html += '<tr class="bg-slate-100 dark:bg-slate-800/50 font-extrabold border-t-2 border-slate-300 dark:border-slate-700">'
+    + '<td class="p-3.5 text-slate-800 dark:text-white">TOTAL</td>'
+    + '<td class="p-3.5 text-center">' + labels.reduce(function(a,k){ return a+monthly[k].count; }, 0) + '</td>'
+    + '<td class="p-3.5 text-right">' + fmt(totTaxable) + '</td>'
+    + '<td class="p-3.5 text-right text-indigo-600">' + fmt(totCgst) + '</td>'
+    + '<td class="p-3.5 text-right text-purple-600">' + fmt(totSgst) + '</td>'
+    + '<td class="p-3.5 text-right text-brand-600">' + fmt(totCgst + totSgst) + '</td>'
+    + '<td class="p-3.5 text-right">' + fmt(totInv) + '</td>'
+    + '</tr>';
+
+  html += labels.length ? '' : '<tr><td colspan="7" class="p-6 text-center text-slate-400">No data in selected range.</td></tr>';
+  html += '</tbody></table></div></div></div>';
+  g('rp-output').innerHTML = html;
+  REPORT_DATA_CACHE = { type: 'gst', monthly: monthly, labels: labels };
+  lucide.createIcons();
+}
+
+// ────────────────────────────────────────────────────────────────
+//  PHASE 2D — PARTY-WISE SALES REPORT
+// ────────────────────────────────────────────────────────────────
+function renderPartyReport() {
+  var start     = g('rp-start').value;
+  var end       = g('rp-end').value;
+  var partyFilter = g('rp-party').value;
+
+  var partyMap = {};
+  DB.sales.forEach(function(s) {
+    var parts = (s.date || '').split('-');
+    if (parts.length === 3) {
+      var d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+      if (start) { var sd = new Date(start); if (d < sd) return; }
+      if (end)   { var ed = new Date(end); ed.setHours(23,59,59); if (d > ed) return; }
+    }
+    if (partyFilter !== 'ALL' && s.customerName !== partyFilter) return;
+    var p = s.customerName;
+    if (!partyMap[p]) partyMap[p] = { invoices: 0, revenue: 0, collected: 0, dues: 0, qty: 0, mobile: s.mobile };
+    partyMap[p].invoices++;
+    partyMap[p].revenue   += (s.invoiceTotal || 0);
+    partyMap[p].collected += (s.totalPaid    || 0);
+    partyMap[p].dues      += (s.balanceDue   || 0);
+    partyMap[p].qty       += (s.totalQty     || 0);
+  });
+
+  var partyNames = Object.keys(partyMap).sort(function(a,b){ return partyMap[b].revenue - partyMap[a].revenue; });
+  var html = '<div class="space-y-5">'
+    + '<div class="glass-card rounded-2xl shadow-sm overflow-hidden">'
+    + '  <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-800 dark:text-white text-sm"><i data-lucide="users" class="h-4 w-4 text-brand-600"></i> Party-wise Sales Report (Sorted by Revenue)</div>'
+    + '  <div class="overflow-x-auto"><table class="w-full text-left text-sm">'
+    + '  <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-bold">'
+    + '    <th class="p-3.5">#</th><th class="p-3.5">Party Name</th><th class="p-3.5">Mobile</th><th class="p-3.5 text-center">Invoices</th><th class="p-3.5 text-center">Cylinders</th><th class="p-3.5 text-right">Revenue</th><th class="p-3.5 text-right text-emerald-600">Collected</th><th class="p-3.5 text-right text-rose-600">Due</th>'
+    + '  </tr></thead><tbody>';
+
+  partyNames.forEach(function(p, i) {
+    var d = partyMap[p];
+    var dueColor = d.dues > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600';
+    html += '<tr class="border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/30 cursor-pointer" onclick="openShareModal(\'' + p + '\', \'customer\')">'
+      + '<td class="p-3.5 text-slate-400 text-xs font-bold">' + (i+1) + '</td>'
+      + '<td class="p-3.5 font-bold text-slate-800 dark:text-white">' + p + '</td>'
+      + '<td class="p-3.5 text-slate-500">' + (d.mobile || '—') + '</td>'
+      + '<td class="p-3.5 text-center font-semibold">' + d.invoices + '</td>'
+      + '<td class="p-3.5 text-center font-semibold text-amber-600">' + d.qty + '</td>'
+      + '<td class="p-3.5 text-right font-bold text-brand-600">' + fmt(d.revenue) + '</td>'
+      + '<td class="p-3.5 text-right text-emerald-600 font-semibold">' + fmt(d.collected) + '</td>'
+      + '<td class="p-3.5 text-right ' + dueColor + '">' + fmt(d.dues) + '</td>'
+      + '</tr>';
+  });
+
+  html += partyNames.length ? '' : '<tr><td colspan="8" class="p-6 text-center text-slate-400">No data found.</td></tr>';
+  html += '</tbody></table></div></div></div>';
+  g('rp-output').innerHTML = html;
+  REPORT_DATA_CACHE = { type: 'party', partyMap: partyMap, partyNames: partyNames };
+  lucide.createIcons();
+}
+
+// ────────────────────────────────────────────────────────────────
+//  PHASE 2E — EXPORT TO CSV / EXCEL
+// ────────────────────────────────────────────────────────────────
+function exportReportExcel() {
+  if (!REPORT_DATA_CACHE) { toast('Generate a report first!', 'error'); return; }
+  var d = REPORT_DATA_CACHE;
+  var rows = [], filename = 'report.csv';
+
+  if (d.type === 'revenue') {
+    filename = 'revenue_report.csv';
+    rows.push(['Month', 'Invoices', 'Revenue', 'Collected', 'Dues']);
+    d.labels.forEach(function(lbl, i) {
+      var k = d.labels_raw[i];
+      var m = d.monthly[k];
+      rows.push([lbl, m.count, m.revenue.toFixed(2), m.collected.toFixed(2), m.dues.toFixed(2)]);
+    });
+  } else if (d.type === 'driver') {
+    filename = 'driver_report.csv';
+    rows.push(['Driver', 'Deliveries', 'Cylinders', 'Revenue', 'Collected', 'Dues']);
+    d.drvNames.forEach(function(drv) {
+      var m = d.driverMap[drv];
+      var inv = Object.keys(m.invoices).length;
+      rows.push([drv, inv, m.qty, m.revenue.toFixed(2), m.collected.toFixed(2), (m.revenue-m.collected).toFixed(2)]);
+    });
+  } else if (d.type === 'gst') {
+    filename = 'gst_report.csv';
+    rows.push(['Month', 'Invoices', 'Taxable Value', 'CGST', 'SGST', 'Total GST', 'Invoice Total']);
+    var mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    d.labels.forEach(function(k) {
+      var m = d.monthly[k]; var p = k.split('-');
+      rows.push([mNames[parseInt(p[1])-1]+' '+p[0], m.count, m.taxable.toFixed(2), m.cgst.toFixed(2), m.sgst.toFixed(2), (m.cgst+m.sgst).toFixed(2), m.total.toFixed(2)]);
+    });
+  } else if (d.type === 'party') {
+    filename = 'party_report.csv';
+    rows.push(['Party Name', 'Mobile', 'Invoices', 'Cylinders', 'Revenue', 'Collected', 'Dues']);
+    d.partyNames.forEach(function(p) {
+      var m = d.partyMap[p];
+      rows.push([p, m.mobile||'', m.invoices, m.qty, m.revenue.toFixed(2), m.collected.toFixed(2), m.dues.toFixed(2)]);
+    });
+  } else {
+    toast('Export not supported for this report type yet.', 'info'); return;
+  }
+
+  var csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  toast('Report exported as ' + filename + ' ✓', 'success');
+}
+
 
 </script>
 </body>
