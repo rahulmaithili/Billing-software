@@ -214,7 +214,127 @@
 </head>
 <body class="h-screen overflow-hidden flex flex-row">
 
+<!-- ════════════════════════ LOGIN SCREEN ═════════════════════════ -->
+<div id="login-screen" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden" style="background: linear-gradient(135deg, #0a0b0f 0%, #0f1117 40%, #0d1526 100%);">
+
+  <!-- Animated Background Particles -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-5 animate-pulse" style="background: radial-gradient(circle, #ea580c, transparent); animation-duration: 4s;"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-5 animate-pulse" style="background: radial-gradient(circle, #3b82f6, transparent); animation-duration: 6s;"></div>
+    <div class="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-3 animate-pulse" style="background: radial-gradient(circle, #ea580c, transparent); animation-duration: 5s; transform: translate(-50%,-50%);"></div>
+    <!-- Grid Lines -->
+    <div class="absolute inset-0" style="background-image: linear-gradient(rgba(234,88,12,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(234,88,12,0.03) 1px, transparent 1px); background-size: 60px 60px;"></div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="relative w-full max-w-md mx-4" id="login-card" style="animation: loginSlideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;">
+    <!-- Glow Ring -->
+    <div class="absolute -inset-0.5 rounded-3xl opacity-30" style="background: linear-gradient(135deg, #ea580c, #f97316, #0f172a); filter: blur(8px);"></div>
+
+    <div class="relative rounded-3xl p-8" style="background: rgba(16,17,22,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(234,88,12,0.2); box-shadow: 0 32px 64px rgba(0,0,0,0.6);">
+
+      <!-- Brand Header -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-xl" style="background: linear-gradient(135deg, #ea580c, #f97316); box-shadow: 0 8px 32px rgba(234,88,12,0.4);">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+        </div>
+        <h1 class="text-2xl font-extrabold text-white tracking-wide" id="login-agency-name">SHIV SHAKTI</h1>
+        <p class="text-xs text-slate-500 font-semibold uppercase tracking-widest mt-1">HP Gas Agency Portal</p>
+        <div class="h-px mt-4" style="background: linear-gradient(90deg, transparent, rgba(234,88,12,0.5), transparent);"></div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="login-error" class="hidden mb-4 px-4 py-3 rounded-xl text-sm font-semibold text-rose-400 flex items-center gap-2" style="background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.2);">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <span id="login-error-msg">Invalid username or password</span>
+      </div>
+
+      <!-- Form -->
+      <div class="space-y-4">
+        <!-- Username -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Username</label>
+          <div class="relative">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <input type="text" id="login-username" placeholder="Enter username" autocomplete="username"
+              onkeydown="if(event.key==='Enter') g('login-password').focus()"
+              class="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-semibold text-white placeholder-slate-600 outline-none transition-all"
+              style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);"
+              onfocus="this.style.borderColor='rgba(234,88,12,0.5)'; this.style.boxShadow='0 0 0 3px rgba(234,88,12,0.1)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.boxShadow='none'">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Password</label>
+          <div class="relative">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password"
+              onkeydown="if(event.key==='Enter') doLogin()"
+              class="w-full pl-10 pr-10 py-3 rounded-xl text-sm font-semibold text-white placeholder-slate-600 outline-none transition-all"
+              style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);"
+              onfocus="this.style.borderColor='rgba(234,88,12,0.5)'; this.style.boxShadow='0 0 0 3px rgba(234,88,12,0.1)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.boxShadow='none'">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors" id="pw-toggle-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="pw-eye-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="login-remember" class="w-4 h-4 accent-orange-500 rounded">
+            <span class="text-xs text-slate-500 font-semibold">Remember me</span>
+          </label>
+          <span class="text-xs text-slate-600 font-semibold">v4.0 Portal</span>
+        </div>
+
+        <!-- Login Button -->
+        <button onclick="doLogin()" id="login-btn"
+          class="w-full py-3.5 rounded-xl font-extrabold text-sm text-white transition-all duration-200 relative overflow-hidden mt-2"
+          style="background: linear-gradient(135deg, #ea580c, #f97316); box-shadow: 0 8px 24px rgba(234,88,12,0.35);"
+          onmouseover="this.style.boxShadow='0 12px 32px rgba(234,88,12,0.5)'; this.style.transform='translateY(-1px)'"
+          onmouseout="this.style.boxShadow='0 8px 24px rgba(234,88,12,0.35)'; this.style.transform='translateY(0)'">
+          <span id="login-btn-text" class="flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+            Sign In to Portal
+          </span>
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 text-center">
+        <p class="text-[10px] text-slate-700 font-semibold">🔒 Secured Portal Access · <span class="text-slate-600">Shiv Shakti HP Gas Agency</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes loginSlideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes loginShake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+.login-shake { animation: loginShake 0.5s ease-in-out; }
+</style>
+
 <!-- ════════════════════════ SIDEBAR ════════════════════════ -->
+
 <aside id="sidebar" class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 shadow-2xl transition-all duration-300 overflow-hidden text-slate-300">
   <div class="flex flex-col flex-1 min-h-0">
     <div class="p-5 border-b border-slate-800 flex items-center justify-between gap-3">
@@ -306,6 +426,22 @@
     <button onclick="openReturnModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 px-4 rounded-lg font-bold text-sm transition-all border border-slate-700 flex items-center justify-center gap-2">
       <i data-lucide="arrow-left-right" class="h-4 w-4 shrink-0"></i><span class="nl">Cylinder Return</span>
     </button>
+
+    <!-- User Info + Logout -->
+    <div class="border-t border-slate-800 pt-2 mt-1">
+      <div class="flex items-center justify-between px-1 py-2">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-sm text-white" style="background: linear-gradient(135deg,#ea580c,#f97316)" id="sb-user-avatar">A</div>
+          <div class="overflow-hidden sidebar-txt">
+            <p class="font-bold text-white text-xs truncate" id="sb-user-name">Admin</p>
+            <p class="text-slate-500 text-[10px] truncate" id="sb-user-role">Administrator</p>
+          </div>
+        </div>
+        <button onclick="doLogout()" title="Logout" class="h-8 w-8 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-500 hover:text-rose-400 flex items-center justify-center transition-all shrink-0 border border-slate-700 hover:border-rose-900/50">
+          <i data-lucide="power" class="h-3.5 w-3.5"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </aside>
 
@@ -348,6 +484,21 @@
         <img id="hdr-logo" src="" class="hidden h-full w-full object-contain">
         <div id="hdr-logo-placeholder" class="h-9 w-9 bg-brand-500/10 rounded-full flex items-center justify-center font-bold text-brand-600 text-sm">SS</div>
       </div>
+    </div>
+
+    <!-- Logged-in User Chip + Logout -->
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg">
+        <div class="h-6 w-6 rounded-lg flex items-center justify-center font-extrabold text-xs text-white shrink-0" style="background:linear-gradient(135deg,#ea580c,#f97316)" id="hdr-user-avatar">A</div>
+        <div>
+          <p class="text-xs font-bold text-slate-800 dark:text-white" id="hdr-user-name">Admin</p>
+          <p class="text-[10px] text-slate-500" id="hdr-user-role">Administrator</p>
+        </div>
+      </div>
+      <button onclick="doLogout()" title="Logout" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 text-rose-600 border border-rose-200 dark:border-rose-900/40 p-2 rounded-lg transition-all flex items-center gap-1.5 text-xs font-bold">
+        <i data-lucide="power" class="h-4 w-4"></i>
+        <span class="hidden sm:inline">Logout</span>
+      </button>
     </div>
   </header>
 
@@ -2249,29 +2400,239 @@ function canPerformAction(actionType) {
 // Initialize Web App and Theme on load
 window.onload = function() {
   lucide.createIcons();
-  initRoleSwitcher();
   
   // Theme load
   var savedTheme = localStorage.getItem('shivShaktiTheme') || 'dark';
   if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-    document.body.classList.add('dark');
+    document.body.classList.add('dark-mode', 'dark');
     document.documentElement.classList.add('dark');
   } else {
-    document.body.classList.remove('dark-mode');
-    document.body.classList.remove('dark');
+    document.body.classList.remove('dark-mode', 'dark');
     document.documentElement.classList.remove('dark');
   }
-  
-  var now = new Date();
-  var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-  if (g('dt-start')) g('dt-start').value = todayStr;
-  if (g('dt-end')) g('dt-end').value = todayStr;
-  
-  refreshAll(true);
+
+  // Check for remembered login session
+  var savedSession = localStorage.getItem('ss_session');
+  if (savedSession) {
+    try {
+      var sess = JSON.parse(savedSession);
+      DB.currentUser = sess;
+      currentRole = sess.role || 'Administrator';
+      hideLoginScreen();
+      initRoleSwitcher();
+      updateUserUI(sess);
+      var now = new Date();
+      var todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+      if (g('dt-start')) g('dt-start').value = todayStr;
+      if (g('dt-end')) g('dt-end').value = todayStr;
+      refreshAll(true);
+      return;
+    } catch(e) { localStorage.removeItem('ss_session'); }
+  }
+
+  // Show login screen
+  showLoginScreen();
+
+  // Pre-fill if remembered username
+  var remUser = localStorage.getItem('ss_remember_user');
+  if (remUser) {
+    g('login-username').value = remUser;
+    g('login-remember').checked = true;
+  }
 };
 
+
 function g(id) { return document.getElementById(id); }
+
+// ════════════════════════════════════════════════════════════════
+//  LOGIN / LOGOUT SYSTEM
+// ════════════════════════════════════════════════════════════════
+function showLoginScreen() {
+  var ls = g('login-screen');
+  if (ls) {
+    ls.style.display = 'flex';
+    ls.style.opacity = '0';
+    setTimeout(function(){ ls.style.transition = 'opacity 0.3s'; ls.style.opacity = '1'; }, 10);
+  }
+  // Focus username
+  setTimeout(function(){ var u = g('login-username'); if (u) u.focus(); }, 300);
+}
+
+function hideLoginScreen() {
+  var ls = g('login-screen');
+  if (ls) {
+    ls.style.transition = 'opacity 0.4s, transform 0.4s';
+    ls.style.opacity = '0';
+    ls.style.transform = 'scale(1.02)';
+    setTimeout(function(){ ls.style.display = 'none'; ls.style.transform = ''; }, 420);
+  }
+}
+
+function doLogin() {
+  var uname  = (g('login-username').value || '').trim();
+  var pw     = (g('login-password').value || '').trim();
+  var btnTxt = g('login-btn-text');
+  var errEl  = g('login-error');
+  var errMsg = g('login-error-msg');
+  var card   = g('login-card');
+
+  if (!uname || !pw) {
+    errMsg.textContent = 'Please enter both username and password.';
+    errEl.classList.remove('hidden');
+    card.classList.add('login-shake');
+    setTimeout(function(){ card.classList.remove('login-shake'); }, 600);
+    return;
+  }
+
+  // Show spinner
+  btnTxt.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Signing in...';
+  g('login-btn').disabled = true;
+
+  // Validate against DB.users OR fallback to hardcoded admin
+  setTimeout(function() {
+    var matched = null;
+
+    // Check DB users first
+    if (DB.users && DB.users.length > 0) {
+      DB.users.forEach(function(u) {
+        if ((u.username || '').toLowerCase() === uname.toLowerCase() && u.password === pw) {
+          matched = { username: u.username, role: u.role || 'Administrator', fullName: u.fullName || u.username };
+        }
+      });
+    }
+
+    // Fallback: hardcoded admin (always accessible)
+    if (!matched && uname.toLowerCase() === 'admin' && pw === 'admin123') {
+      matched = { username: 'admin', role: 'Administrator', fullName: 'Administrator' };
+    }
+
+    if (matched) {
+      // Save session
+      DB.currentUser = matched;
+      currentRole = matched.role;
+
+      if (g('login-remember').checked) {
+        localStorage.setItem('ss_session', JSON.stringify(matched));
+        localStorage.setItem('ss_remember_user', uname);
+      } else {
+        localStorage.removeItem('ss_session');
+        localStorage.removeItem('ss_remember_user');
+        sessionStorage.setItem('ss_session', JSON.stringify(matched));
+      }
+
+      // Log login event
+      logAuditAction('LOGIN', matched.username + ' logged in successfully', 'Auth');
+      if (!DB.loginHistory) DB.loginHistory = [];
+      var now = new Date();
+      var ts = now.getDate().toString().padStart(2,'0') + '-' + (now.getMonth()+1).toString().padStart(2,'0') + '-' + now.getFullYear()
+        + ' ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      DB.loginHistory.unshift({
+        timestamp: ts, username: matched.username, role: matched.role,
+        status: 'SUCCESS', device: navigator.userAgent.substring(0, 80)
+      });
+
+      // Update UI
+      updateUserUI(matched);
+      initRoleSwitcher();
+
+      // Hide login screen
+      hideLoginScreen();
+      errEl.classList.add('hidden');
+
+      // Load app data
+      var now2 = new Date();
+      var todayStr = now2.getFullYear() + '-' + String(now2.getMonth()+1).padStart(2,'0') + '-' + String(now2.getDate()).padStart(2,'0');
+      if (g('dt-start')) g('dt-start').value = todayStr;
+      if (g('dt-end'))   g('dt-end').value   = todayStr;
+      refreshAll(true);
+
+    } else {
+      // Wrong credentials
+      if (!DB.loginHistory) DB.loginHistory = [];
+      var now3 = new Date();
+      var ts3 = now3.getDate().toString().padStart(2,'0') + '-' + (now3.getMonth()+1).toString().padStart(2,'0') + '-' + now3.getFullYear()
+        + ' ' + now3.getHours().toString().padStart(2,'0') + ':' + now3.getMinutes().toString().padStart(2,'0');
+      DB.loginHistory.unshift({ timestamp: ts3, username: uname, role: '—', status: 'FAILED', device: navigator.userAgent.substring(0, 80) });
+
+      errMsg.textContent = 'Incorrect username or password. Please try again.';
+      errEl.classList.remove('hidden');
+      card.classList.add('login-shake');
+      setTimeout(function(){ card.classList.remove('login-shake'); }, 600);
+      g('login-password').value = '';
+      g('login-password').focus();
+    }
+
+    btnTxt.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg> Sign In to Portal';
+    g('login-btn').disabled = false;
+  }, 700);
+}
+
+function doLogout() {
+  Swal.fire({
+    title: 'Confirm Logout',
+    text: 'Are you sure you want to sign out of the portal?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Logout',
+    cancelButtonText: 'Stay',
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b'
+  }).then(function(result) {
+    if (result.isConfirmed) {
+      var user = DB.currentUser ? DB.currentUser.username : 'Unknown';
+      logAuditAction('LOGIN', user + ' logged out', 'Auth');
+
+      // Clear session
+      localStorage.removeItem('ss_session');
+      sessionStorage.removeItem('ss_session');
+      DB.currentUser = null;
+      currentRole = 'Administrator';
+
+      // Reset form
+      if (g('login-username')) g('login-username').value = localStorage.getItem('ss_remember_user') || '';
+      if (g('login-password')) g('login-password').value = '';
+      if (g('login-error')) g('login-error').classList.add('hidden');
+
+      // Show login screen
+      showLoginScreen();
+    }
+  });
+}
+
+function togglePasswordVisibility() {
+  var inp = g('login-password');
+  if (!inp) return;
+  var isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  var icon = g('pw-eye-icon');
+  if (icon) {
+    icon.innerHTML = isHidden
+      ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>'
+      : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+  }
+}
+
+function updateUserUI(user) {
+  var name   = user.fullName || user.username || 'Admin';
+  var role   = user.role || 'Administrator';
+  var avatar = (name[0] || 'A').toUpperCase();
+
+  // Header
+  var han = g('hdr-user-name'); if (han) han.textContent = name;
+  var har = g('hdr-user-role'); if (har) har.textContent = role;
+  var hav = g('hdr-user-avatar'); if (hav) hav.textContent = avatar;
+
+  // Sidebar
+  var sbn = g('sb-user-name'); if (sbn) sbn.textContent = name;
+  var sbr = g('sb-user-role'); if (sbr) sbr.textContent = role;
+  var sba = g('sb-user-avatar'); if (sba) sba.textContent = avatar;
+
+  // Role switcher
+  var rs = g('topRoleSelect'); if (rs) rs.value = role;
+  currentRole = role;
+  applyRolePermissions();
+}
+
 
 function printContainerWithLoadedImages() {
   var printContainer = g('print-container');
