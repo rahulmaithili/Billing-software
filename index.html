@@ -361,6 +361,9 @@
         </div>
       </div>
 
+      <!-- DUES ALERT BANNER (hidden by default) -->
+      <div id="dash-dues-alert" class="hidden bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-2xl p-4 mb-5"></div>
+
       <!-- KPI CARDS ROW -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group" onclick="nav('sales')">
@@ -1319,6 +1322,77 @@
 
 <!-- ════════════════════════ MODALS ════════════════════════ -->
 
+<!-- Partial Payment Modal -->
+<div class="modal-overlay" id="modal-partial-payment">
+  <div class="modal-box !w-[500px]">
+    <div class="bg-slate-900 text-white p-5 rounded-t-2xl flex items-center justify-between border-b border-slate-800">
+      <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="wallet" class="h-4.5 w-4.5 text-emerald-500"></i> Record Partial Payment</h3>
+      <button onclick="closeModal('modal-partial-payment')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="h-5 w-5"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="pp-receipt-no">
+      <!-- Invoice Info Banner -->
+      <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Invoice</p>
+            <p class="font-extrabold text-slate-800 dark:text-white text-sm" id="pp-invoice-label">—</p>
+            <p class="text-xs text-slate-500 mt-0.5" id="pp-customer-label">—</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Balance Due</p>
+            <p class="font-extrabold text-rose-600 text-xl" id="pp-balance-label">₹0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Amount -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Payment Amount (₹) *</label>
+        <input type="number" id="pp-amount" min="1" step="0.01" class="w-full rounded-lg p-2.5 text-sm font-bold" placeholder="Enter amount received">
+      </div>
+
+      <!-- Payment Mode -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-2">Payment Mode *</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:has-[:checked]:bg-emerald-950/20 transition-all">
+            <input type="radio" name="pp-mode" id="pp-mode-cash" value="cash" checked class="accent-emerald-600">
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">💵 Cash</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-950/20 transition-all">
+            <input type="radio" name="pp-mode" id="pp-mode-online" value="online" class="accent-blue-600">
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">📱 Online</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 cursor-pointer has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 dark:has-[:checked]:bg-purple-950/20 transition-all">
+            <input type="radio" name="pp-mode" id="pp-mode-both" value="both" class="accent-purple-600">
+            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">🔀 Both</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Payment Date -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Payment Date</label>
+        <input type="date" id="pp-date" class="w-full rounded-lg p-2.5 text-sm">
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">Remarks (Optional)</label>
+        <input type="text" id="pp-notes" class="w-full rounded-lg p-2.5 text-sm" placeholder="e.g. Paid by UPI, reference: XXXXXX">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+        <button onclick="closeModal('modal-partial-payment')" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-2.5 px-5 rounded-lg text-sm">Cancel</button>
+        <button onclick="submitPartialPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg text-sm flex items-center gap-2">
+          <i data-lucide="check-circle" class="h-4 w-4"></i> Record Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Party Creation/Edit Modal -->
 <div class="modal-overlay" id="modal-party">
   <div class="modal-box !w-[500px]">
@@ -2147,6 +2221,9 @@ function renderCurrentPage() {
 //  DASHBOARD VIEW
 // ════════════════════════════════════════════════════════════════
 function renderDashboard() {
+  // ── Dues Alert ────────────────────────────────────────────
+  updateDashboardDuesAlert();
+
   // ── Date & Greeting ──────────────────────────────────────
   var now = new Date();
   var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -6602,6 +6679,8 @@ function showActionsDropdown(e, ref, type) {
   var html = '';
   if (type === 'sale') {
     html += '<button onclick="showQuickView(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="eye" class="h-3.5 w-3.5 text-indigo-500"></i> View Details</button>'
+          + '<button onclick="openPartialPayment(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-2"><i data-lucide="wallet" class="h-3.5 w-3.5"></i> Record Payment</button>'
+          + '<button onclick="sendWhatsAppInvoice(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="phone" class="h-3.5 w-3.5 text-emerald-500"></i> WhatsApp Invoice</button>'
           + '<button onclick="editSale(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="pencil" class="h-3.5 w-3.5 text-blue-500"></i> Edit Invoice</button>'
           + '<button onclick="printInvoice(\'' + ref + '\', false)" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="printer" class="h-3.5 w-3.5 text-slate-500"></i> Print Invoice</button>'
           + '<button onclick="printPaymentReceipt(\'' + ref + '\')" class="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2"><i data-lucide="receipt" class="h-3.5 w-3.5 text-emerald-500"></i> Print Payment Slip</button>'
@@ -6967,6 +7046,152 @@ function quickSearchConsumer(num) {
 // ════════════════════════════════════════════════════════════════
 function openModal(id) { var el = g(id); if(el) el.classList.add('open'); }
 function closeModal(id) { var el = g(id); if(el) el.classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 1 — PARTIAL PAYMENT
+// ════════════════════════════════════════════════════════════════
+function openPartialPayment(receiptNo) {
+  closeActiveDropdown();
+  var items = DB.sales.filter(function(x){ return x.receiptNo === receiptNo; });
+  if (!items.length) { toast('Invoice not found!', 'error'); return; }
+  var s = items[0];
+  var balance = s.balanceDue || 0;
+  if (balance <= 0.05) {
+    toast('This invoice is already fully paid! ✓', 'info'); return;
+  }
+  g('pp-receipt-no').value = receiptNo;
+  g('pp-invoice-label').textContent = '#' + receiptNo;
+  g('pp-customer-label').textContent = s.customerName + ' · ' + (s.mobile || '—');
+  g('pp-balance-label').textContent  = fmt(balance);
+  g('pp-amount').value = '';
+  g('pp-notes').value  = '';
+  // Set today's date
+  var now = new Date();
+  g('pp-date').value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  // Reset radio
+  document.getElementById('pp-mode-cash').checked = true;
+  openModal('modal-partial-payment');
+}
+
+function submitPartialPayment() {
+  if (!canPerformAction('edit')) return;
+  var receiptNo = g('pp-receipt-no').value;
+  var amount = parseFloat(g('pp-amount').value) || 0;
+  if (amount <= 0) { toast('Enter a valid payment amount!', 'error'); return; }
+  
+  var items = DB.sales.filter(function(x){ return x.receiptNo === receiptNo; });
+  if (!items.length) { toast('Invoice not found!', 'error'); return; }
+  var balance = items[0].balanceDue || 0;
+  if (amount > balance + 0.01) { 
+    toast('Amount ('+fmt(amount)+') exceeds balance due ('+fmt(balance)+')!', 'error'); return; 
+  }
+
+  var mode = document.querySelector('input[name="pp-mode"]:checked').value;
+  var payDate = g('pp-date').value;
+  var notes = g('pp-notes').value.trim();
+
+  var data = { receiptNo: receiptNo, amount: amount, mode: mode, date: payDate, notes: notes };
+
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r.ok) {
+        closeModal('modal-partial-payment');
+        toast('Payment of ' + fmt(amount) + ' recorded successfully! ✓', 'success');
+        refreshAll(true);
+      } else {
+        toast(r.error || 'Failed to save payment', 'error');
+      }
+    })
+    .withFailureHandler(function(e){ toast(e.message, 'error'); })
+    .apiRecordPartialPayment(data);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 1 — WHATSAPP DIRECT INVOICE SHARE
+// ════════════════════════════════════════════════════════════════
+function sendWhatsAppInvoice(receiptNo) {
+  closeActiveDropdown();
+  var items = DB.sales.filter(function(x){ return x.receiptNo === receiptNo; });
+  if (!items.length) { toast('Invoice not found!', 'error'); return; }
+  var s = items[0];
+  var cp = DB.company || {};
+  var mobile = (s.mobile || '').replace(/\D/g, '');
+
+  // Build items summary
+  var seen = {}, lines = [];
+  DB.sales.filter(function(x){ return x.receiptNo === receiptNo; }).forEach(function(row){
+    if (!seen[row.productName]) {
+      seen[row.productName] = true;
+      lines.push('  • ' + row.productName + ' x' + (row.totalQty||0) + ' @ ₹' + (row.refillRate||0));
+    }
+  });
+
+  var isPaid = (s.balanceDue||0) <= 0.05;
+  var msg = '🔥 *' + (cp.name || 'Shiv Shakti Gas Agency') + '*\n'
+    + '━━━━━━━━━━━━━━━━━━━━\n'
+    + '📋 *Invoice: #' + s.receiptNo + '*\n'
+    + '📅 Date: ' + s.date + '\n'
+    + '👤 Party: ' + s.customerName + '\n\n'
+    + '*Items Delivered:*\n' + lines.join('\n') + '\n\n'
+    + '💰 *Invoice Total: ' + fmt(s.invoiceTotal) + '*\n'
+    + '✅ Paid: ' + fmt(s.totalPaid) + '\n'
+    + (isPaid ? '🎉 *Status: FULLY PAID*\n' : '⚠️ *Balance Due: ' + fmt(s.balanceDue) + '*\n')
+    + '━━━━━━━━━━━━━━━━━━━━\n'
+    + '_Thank you for your business!_\n'
+    + (cp.phone ? '📞 ' + cp.phone : '');
+
+  var encoded = encodeURIComponent(msg);
+  var url = mobile
+    ? 'https://wa.me/91' + mobile + '?text=' + encoded
+    : 'https://wa.me/?text=' + encoded;
+  window.open(url, '_blank');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PHASE 1 — DASHBOARD DUES ALERT BANNER
+// ════════════════════════════════════════════════════════════════
+function updateDashboardDuesAlert() {
+  var alertEl = g('dash-dues-alert');
+  if (!alertEl) return;
+
+  var today = new Date();
+  var thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  // Find parties with dues older than 30 days
+  var oldDueParties = {};
+  DB.sales.forEach(function(s) {
+    if ((s.balanceDue || 0) > 0.05) {
+      var parts = (s.date || '').split('-');
+      if (parts.length === 3) {
+        var sDate = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+        if (sDate < thirtyDaysAgo) {
+          if (!oldDueParties[s.customerName]) oldDueParties[s.customerName] = 0;
+          oldDueParties[s.customerName] += (s.balanceDue || 0);
+        }
+      }
+    }
+  });
+
+  var names = Object.keys(oldDueParties);
+  if (names.length > 0) {
+    var totalOld = names.reduce(function(a,k){ return a + oldDueParties[k]; }, 0);
+    alertEl.innerHTML = '<div class="flex items-center justify-between">'
+      + '<div class="flex items-center gap-3">'
+      + '  <div class="h-9 w-9 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="alert-triangle" class="h-5 w-5 text-rose-600"></i></div>'
+      + '  <div>'
+      + '    <p class="font-extrabold text-rose-700 dark:text-rose-400 text-sm">⚠️ ' + names.length + ' part' + (names.length > 1 ? 'ies have' : 'y has') + ' dues older than 30 days!</p>'
+      + '    <p class="text-xs text-rose-600/80 dark:text-rose-400/70 mt-0.5">Total: <b>' + fmt(totalOld) + '</b> outstanding — ' + names.slice(0,3).join(', ') + (names.length > 3 ? ' +' + (names.length-3) + ' more' : '') + '</p>'
+      + '  </div>'
+      + '</div>'
+      + '<button onclick="nav(\'dues\')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-lg text-xs shrink-0">View Dues</button>'
+      + '</div>';
+    alertEl.classList.remove('hidden');
+    lucide.createIcons();
+  } else {
+    alertEl.classList.add('hidden');
+  }
+}
+
 </script>
 </body>
 </html>
