@@ -481,17 +481,27 @@
           <input type="date" id="sl-end"   onchange="renderSales()" class="rounded-lg py-2 px-3 text-sm">
           <button onclick="clearDates('sl')" class="text-brand-600 text-sm font-bold hover:underline">Clear</button>
         </div>
-        <button onclick="openSaleModal()" class="bg-brand-600 hover:bg-brand-700 text-white py-2 px-4 rounded-lg font-bold text-sm flex items-center gap-1.5 shadow-md shadow-brand-500/20">
-          <i data-lucide="plus" class="h-4 w-4"></i> Add Sale
-        </button>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/60 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shrink-0">
+            <button onclick="setSalesView('table')" id="btn-sales-view-table" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center gap-1">
+              <i data-lucide="table" class="h-3.5 w-3.5"></i> Table View
+            </button>
+            <button onclick="setSalesView('pipeline')" id="btn-sales-view-pipeline" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1">
+              <i data-lucide="kanban" class="h-3.5 w-3.5"></i> Pipeline View
+            </button>
+          </div>
+          <button onclick="openSaleModal()" class="bg-brand-600 hover:bg-brand-700 text-white py-2 px-4 rounded-lg font-bold text-sm flex items-center gap-1.5 shadow-md shadow-brand-500/20">
+            <i data-lucide="plus" class="h-4 w-4"></i> Add Sale
+          </button>
+        </div>
       </div>
-      <div class="glass-card rounded-xl shadow-sm overflow-hidden">
+      <div class="glass-card rounded-xl shadow-sm overflow-hidden" id="sl-table-card">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead><tr class="bg-slate-200 dark:bg-slate-800/50 text-slate-650 dark:text-slate-400 text-[11px] font-bold uppercase border-b border-slate-300 dark:border-slate-800">
               <th class="p-3.5">Invoice#</th><th class="p-3.5">Date</th><th class="p-3.5">Customer / Party</th><th class="p-3.5">Assigned Driver</th>
               <th class="p-3.5">Products Sold</th><th class="p-3.5 text-center">Total Qty (Cash/Onl)</th>
-              <th class="p-3.5 text-right">Grand Total</th><th class="p-3.5 text-right text-emerald-600 dark:text-emerald-400">Total Paid</th><th class="p-3.5 text-right text-rose-600 dark:text-rose-455">Balance Due</th>
+              <th class="p-3.5 text-right">Grand Total</th><th class="p-3.5 text-right text-emerald-600 dark:text-emerald-450">Total Paid</th><th class="p-3.5 text-right text-rose-600 dark:text-rose-455">Balance Due</th>
               <th class="p-3.5 text-center">Status</th><th class="p-3.5 text-center">Actions</th>
             </tr></thead>
             <tbody id="sl-body" class="divide-y divide-slate-200 dark:divide-slate-800/60">
@@ -504,6 +514,37 @@
           <div class="flex gap-2">
             <button onclick="changePage('sl',-1)" class="bg-slate-200 border border-slate-300 dark:bg-slate-800 dark:border-slate-700 rounded px-3 py-1 hover:bg-slate-300 dark:hover:bg-slate-700 text-sm" id="sl-prev">Prev</button>
             <button onclick="changePage('sl',1)"  class="bg-white border border-slate-300 dark:bg-white/10 dark:border-slate-700 rounded px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm" id="sl-next">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Pipeline Grid -->
+      <div id="sl-pipeline-container" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 items-start mt-4">
+        <!-- Column 1: Draft Invoices -->
+        <div class="bg-slate-50 dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+          <div class="flex items-center justify-between border-b pb-3 mb-4 border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <h3 class="font-extrabold text-sm text-slate-850 dark:text-white uppercase tracking-wider">Draft Invoices</h3>
+            </div>
+            <span id="pipeline-drafts-count" class="bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-450 text-[10px] font-bold px-2 py-0.5 rounded-full">0 drafts</span>
+          </div>
+          <div id="pipeline-drafts-list" class="space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
+            <!-- Dynamic Draft Cards -->
+          </div>
+        </div>
+
+        <!-- Column 2: Finalized Sales -->
+        <div class="bg-slate-50 dark:bg-slate-900/20 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+          <div class="flex items-center justify-between border-b pb-3 mb-4 border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <h3 class="font-extrabold text-sm text-slate-850 dark:text-white uppercase tracking-wider">Finalized Sales</h3>
+            </div>
+            <span id="pipeline-finalized-count" class="bg-emerald-100 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-450 text-[10px] font-bold px-2 py-0.5 rounded-full">0 orders</span>
+          </div>
+          <div id="pipeline-finalized-list" class="space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
+            <!-- Dynamic Finalized Cards -->
           </div>
         </div>
       </div>
@@ -1589,6 +1630,7 @@
 var DB = { company: {}, products: [], drivers: [], sales: [], drafts: [], returns: [], tracker: [], parties: [] };
 var CURRENT_PAGE = 'dashboard';
 var PAGE = { sl: 1, rl: 1 };
+var SALES_VIEW_MODE = localStorage.getItem('sales_view_mode') || 'table';
 var PER = 10;
 var EDITING_RETURN_TXN = null;
 
@@ -1827,10 +1869,14 @@ function nav(pageId) {
     products: 'Cylinder Products Catalog',
     company: 'Company Profile & Invoice Settings',
     reports: 'Custom Reports & Analytics',
-    'daily-tally': 'Daily Tally & Hisab Report'
+    'daily-tally': 'Daily Tally & Hisab Report',
+    users: 'Manage Portal Users Directory'
   };
   g('page-title').textContent = titles[pageId] || 'Shiv Shakti Gas Portal';
   
+  if (pageId === 'sales') {
+    initSalesViewSwitcher();
+  }
   renderCurrentPage();
 }
 
@@ -2295,27 +2341,36 @@ function renderSales() {
   var startIdx = (PAGE.sl - 1) * PER;
   var slice = list.slice(startIdx, startIdx + PER);
   
-  g('sl-body').innerHTML = slice.length ? slice.map(function(inv) {
-    var bc = inv.balanceDue > 0.05 ? 'text-rose-600 dark:text-rose-455 font-bold' : 'text-emerald-655 dark:text-emerald-400';
-    var statusBadge = inv.balanceDue <= 0.05 ? 
-      '<span class="badge-paid text-[10px] px-2 py-0.5 rounded-full font-bold">Paid</span>' : 
-      '<span class="badge-pending text-[10px] px-2 py-0.5 rounded-full font-bold">Pending</span>';
-      
-    return '<tr class="tbl-row border-b border-slate-200 dark:border-slate-800/50">'
-      + '<td class="p-3.5"><span onclick="showQuickView(\'' + inv.receiptNo + '\')" class="font-bold text-brand-600 hover:text-brand-700 dark:text-brand-450 dark:hover:text-brand-350 underline cursor-pointer transition-all">' + inv.receiptNo + '</span></td>'
-      + '<td class="p-3.5 text-slate-500 dark:text-slate-400 text-xs">' + inv.date + '</td>'
-      + '<td class="p-3.5 font-bold text-slate-700 dark:text-slate-200">' + inv.customerName + '</td>'
-      + '<td class="p-3.5 text-slate-550 dark:text-slate-350 text-xs font-semibold">' + inv.driver + '</td>'
-      + '<td class="p-3.5 text-slate-600 dark:text-slate-300 text-xs max-w-xs truncate" title="' + inv.itemsText.join(', ') + '">' + inv.itemsText.join(', ') + '</td>'
-      + '<td class="p-3.5 text-center">' + inv.totalQty + ' <span class="text-[10px] text-slate-500">(' + inv.cashQty + 'C/' + inv.onlineQty + 'O)</span></td>'
-      + '<td class="p-3.5 text-right font-semibold">' + fmt(inv.invoiceTotal) + '</td>'
-      + '<td class="p-3.5 text-right text-emerald-600 dark:text-emerald-400">' + fmt(inv.totalPaid) + '</td>'
-      + '<td class="p-3.5 text-right ' + bc + '">' + fmt(inv.balanceDue) + '</td>'
-      + '<td class="p-3.5 text-center">' + statusBadge + '</td>'
-      + '<td class="p-3.5 text-center relative">'
-      + '<button type="button" onclick="showActionsDropdown(event, \'' + inv.receiptNo + '\', \'sale\')" class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 rounded-lg transition-all" title="Actions"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>'
-      + '</td></tr>';
-  }).join('') : '<tr><td colspan="11" class="p-8 text-center text-slate-500">No invoices found.</td></tr>';
+  if (window.SALES_VIEW_MODE === 'pipeline') {
+    g('sl-table-card').classList.add('hidden');
+    g('sl-pipeline-container').classList.remove('hidden');
+    renderSalesPipeline(list);
+  } else {
+    g('sl-table-card').classList.remove('hidden');
+    g('sl-pipeline-container').classList.add('hidden');
+    
+    g('sl-body').innerHTML = slice.length ? slice.map(function(inv) {
+      var bc = inv.balanceDue > 0.05 ? 'text-rose-600 dark:text-rose-455 font-bold' : 'text-emerald-655 dark:text-emerald-400';
+      var statusBadge = inv.balanceDue <= 0.05 ? 
+        '<span class="badge-paid text-[10px] px-2 py-0.5 rounded-full font-bold">Paid</span>' : 
+        '<span class="badge-pending text-[10px] px-2 py-0.5 rounded-full font-bold">Pending</span>';
+        
+      return '<tr class="tbl-row border-b border-slate-200 dark:border-slate-800/50">'
+        + '<td class="p-3.5"><span onclick="showQuickView(\'' + inv.receiptNo + '\')" class="font-bold text-brand-600 hover:text-brand-700 dark:text-brand-450 dark:hover:text-brand-350 underline cursor-pointer transition-all">' + inv.receiptNo + '</span></td>'
+        + '<td class="p-3.5 text-slate-500 dark:text-slate-400 text-xs">' + inv.date + '</td>'
+        + '<td class="p-3.5 font-bold text-slate-700 dark:text-slate-200">' + inv.customerName + '</td>'
+        + '<td class="p-3.5 text-slate-550 dark:text-slate-350 text-xs font-semibold">' + inv.driver + '</td>'
+        + '<td class="p-3.5 text-slate-600 dark:text-slate-300 text-xs max-w-xs truncate" title="' + inv.itemsText.join(', ') + '">' + inv.itemsText.join(', ') + '</td>'
+        + '<td class="p-3.5 text-center">' + inv.totalQty + ' <span class="text-[10px] text-slate-500">(' + inv.cashQty + 'C/' + inv.onlineQty + 'O)</span></td>'
+        + '<td class="p-3.5 text-right font-semibold">' + fmt(inv.invoiceTotal) + '</td>'
+        + '<td class="p-3.5 text-right text-emerald-600 dark:text-emerald-400">' + fmt(inv.totalPaid) + '</td>'
+        + '<td class="p-3.5 text-right ' + bc + '">' + fmt(inv.balanceDue) + '</td>'
+        + '<td class="p-3.5 text-center">' + statusBadge + '</td>'
+        + '<td class="p-3.5 text-center relative">'
+        + '<button type="button" onclick="showActionsDropdown(event, \'' + inv.receiptNo + '\', \'sale\')" class="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 rounded-lg transition-all" title="Actions"><i data-lucide="more-vertical" class="h-4 w-4"></i></button>'
+        + '</td></tr>';
+    }).join('') : '<tr><td colspan="11" class="p-8 text-center text-slate-500">No invoices found.</td></tr>';
+  }
   
   lucide.createIcons();
 }
@@ -5413,6 +5468,151 @@ function delUser(username) {
         .apiDeleteUser(username);
     }
   });
+}
+
+// --- Sales Pipeline Functions ---
+function setSalesView(view) {
+  window.SALES_VIEW_MODE = view;
+  localStorage.setItem('sales_view_mode', view);
+  
+  var tblBtn = g('btn-sales-view-table');
+  var pipeBtn = g('btn-sales-view-pipeline');
+  
+  if (view === 'pipeline') {
+    tblBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1';
+    pipeBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center gap-1';
+  } else {
+    tblBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center gap-1';
+    pipeBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1';
+  }
+  
+  renderSales();
+}
+
+function initSalesViewSwitcher() {
+  var view = window.SALES_VIEW_MODE || 'table';
+  var tblBtn = g('btn-sales-view-table');
+  var pipeBtn = g('btn-sales-view-pipeline');
+  if (tblBtn && pipeBtn) {
+    if (view === 'pipeline') {
+      tblBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1';
+      pipeBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center gap-1';
+    } else {
+      tblBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-brand-600 text-white shadow-sm flex items-center gap-1';
+      pipeBtn.className = 'px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1';
+    }
+  }
+}
+
+function renderSalesPipeline(finalizedList) {
+  var q = g('sl-search').value.toLowerCase();
+  var start = g('sl-start').value;
+  var end = g('sl-end').value;
+  
+  var draftsMap = {};
+  DB.drafts.forEach(function(d) {
+    var matchesSearch = !q || 
+      (d.receiptNo || '').toLowerCase().includes(q) || 
+      (d.customerName || '').toLowerCase().includes(q) || 
+      (d.mobile || '').toLowerCase().includes(q);
+      
+    var matchesDate = true;
+    if (start || end) {
+      var parts = (d.date || '').split('-');
+      if (parts.length === 3) {
+        var sDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        if (start) {
+          var startDate = new Date(start);
+          startDate.setHours(0,0,0,0);
+          if (sDate < startDate) matchesDate = false;
+        }
+        if (end) {
+          var endDate = new Date(end);
+          endDate.setHours(23,59,59,999);
+          if (sDate > endDate) matchesDate = false;
+        }
+      }
+    }
+      
+    if (matchesSearch && matchesDate) {
+      if (!draftsMap[d.receiptNo]) {
+        draftsMap[d.receiptNo] = {
+          receiptNo: d.receiptNo,
+          date: d.date,
+          customerName: d.customerName,
+          totalQty: 0,
+          invoiceTotal: d.invoiceTotal,
+          itemsText: []
+        };
+      }
+      draftsMap[d.receiptNo].itemsText.push(d.productName + ' (' + d.totalQty + ')');
+      draftsMap[d.receiptNo].totalQty += (d.totalQty || 0);
+    }
+  });
+  
+  var draftsList = Object.keys(draftsMap).map(function(k) { return draftsMap[k]; });
+  
+  var draftsCol = g('pipeline-drafts-list');
+  if (draftsCol) {
+    g('pipeline-drafts-count').textContent = draftsList.length + ' drafts';
+    draftsCol.innerHTML = draftsList.length ? draftsList.map(function(d) {
+      return '<div class="glass-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm space-y-2.5 transition-all hover:shadow-md">'
+        + '  <div class="flex items-start justify-between">'
+        + '    <div>'
+        + '      <span class="text-[10px] bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Draft Invoice</span>'
+        + '      <h4 class="font-extrabold text-sm text-slate-850 dark:text-white mt-1">' + d.customerName + '</h4>'
+        + '    </div>'
+        + '    <span class="text-[10px] text-slate-500 font-semibold">' + d.date + '</span>'
+        + '  </div>'
+        + '  <div class="text-[11px] text-slate-500 max-w-xs truncate" title="' + d.itemsText.join(', ') + '">'
+        + '    <b class="text-slate-655 dark:text-slate-350">Items:</b> ' + d.itemsText.join(', ') + ' (' + d.totalQty + ' pcs)'
+        + '  </div>'
+        + '  <div class="flex items-center justify-between border-t pt-2.5 border-dashed border-slate-200 dark:border-slate-800">'
+        + '    <div><span class="text-[10px] text-slate-500 block">Draft Total</span><b class="text-xs text-slate-850 dark:text-white">' + fmt(d.invoiceTotal) + '</b></div>'
+        + '    <div class="flex gap-1.5">'
+        + '      <button onclick="resumeDraft(\'' + d.receiptNo + '\')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold p-1.5 rounded-lg text-xs" title="Resume/Edit"><i data-lucide="play" class="h-3.5 w-3.5"></i></button>'
+        + '      <button onclick="viewDraft(\'' + d.receiptNo + '\')" class="bg-slate-150 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold p-1.5 rounded-lg text-xs" title="View Details"><i data-lucide="eye" class="h-3.5 w-3.5"></i></button>'
+        + '      <button onclick="delDraft(\'' + d.receiptNo + '\')" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-955/20 text-rose-600 font-bold p-1.5 rounded-lg text-xs" title="Delete"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>'
+        + '    </div>'
+        + '  </div>'
+        + '</div>';
+    }).join('') : '<div class="text-center p-6 text-xs text-slate-500 italic">No draft invoices in pipeline.</div>';
+  }
+
+  var finCol = g('pipeline-finalized-list');
+  if (finCol) {
+    g('pipeline-finalized-count').textContent = finalizedList.length + ' orders';
+    finCol.innerHTML = finalizedList.length ? finalizedList.map(function(f) {
+      var isPaid = f.balanceDue <= 0.05;
+      var statusText = isPaid ? 'Paid' : 'Pending: ' + fmt(f.balanceDue);
+      var statusClass = isPaid ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600 font-bold';
+      
+      return '<div class="glass-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm space-y-2.5 transition-all hover:shadow-md">'
+        + '  <div class="flex items-start justify-between">'
+        + '    <div>'
+        + '      <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ' + statusClass + '">' + statusText + '</span>'
+        + '      <h4 class="font-extrabold text-sm text-slate-850 dark:text-white mt-1">' + f.customerName + '</h4>'
+        + '      <span class="text-[10px] text-slate-400">Invoice: #' + f.receiptNo + '</span>'
+        + '    </div>'
+        + '    <span class="text-[10px] text-slate-500 font-semibold">' + f.date + '</span>'
+        + '  </div>'
+        + '  <div class="text-[11px] text-slate-500 max-w-xs truncate" title="' + f.itemsText.join(', ') + '">'
+        + '    <b class="text-slate-655 dark:text-slate-350">Items:</b> ' + f.itemsText.join(', ') + ' (' + f.totalQty + ' pcs)'
+        + '  </div>'
+        + '  <div class="flex items-center justify-between border-t pt-2.5 border-dashed border-slate-200 dark:border-slate-800">'
+        + '    <div><span class="text-[10px] text-slate-500 block">Grand Total</span><b class="text-xs text-slate-850 dark:text-white">' + fmt(f.invoiceTotal) + '</b></div>'
+        + '    <div class="flex gap-1.5">'
+        + '      <button onclick="printInvoice(\'' + f.receiptNo + '\')" class="bg-slate-150 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold p-1.5 rounded-lg text-xs" title="Print Invoice"><i data-lucide="printer" class="h-3.5 w-3.5"></i></button>'
+        + '      <button onclick="viewSale(\'' + f.receiptNo + '\')" class="bg-slate-150 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold p-1.5 rounded-lg text-xs" title="View Details"><i data-lucide="eye" class="h-3.5 w-3.5"></i></button>'
+        + '      <button onclick="openShareModal(\'' + f.receiptNo + '\', \'sale\')" class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-955/20 text-indigo-600 font-bold p-1.5 rounded-lg text-xs" title="Share Slips"><i data-lucide="share-2" class="h-3.5 w-3.5"></i></button>'
+        + '      <button onclick="delSale(\'' + f.receiptNo + '\')" class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-955/20 text-rose-600 font-bold p-1.5 rounded-lg text-xs" title="Delete"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>'
+        + '    </div>'
+        + '  </div>'
+        + '</div>';
+    }).join('') : '<div class="text-center p-6 text-xs text-slate-500 italic">No finalized invoices.</div>';
+  }
+  
+  lucide.createIcons();
 }
 
 function editReturn(txnNo) {
