@@ -71,7 +71,7 @@ function initRoleSwitcher() {
 function switchRole(newRole) {
   window.currentRole = newRole;
   localStorage.setItem('user_role', newRole);
-  
+
   if (newRole === 'Administrator') window.currentUserName = 'Rahul Maithili (Admin)';
   else if (newRole === 'Billing Manager') window.currentUserName = 'Anita Sharma (Billing Manager)';
   else if (newRole === 'Inventory Clerk') window.currentUserName = 'Vikram Singh (Inventory Clerk)';
@@ -215,11 +215,11 @@ function renderDashboardView(container) {
       </div>
       <div class="dash-kpi-card">
         <div class="dash-kpi-title"><i class="fas fa-map-marker-alt"></i> Top Sales Location</div>
-        <div class="dash-kpi-val" style="font-size: 0.95rem;">${m.topLocation}</div>
+        <div class="dash-kpi-val" style="font-size: 0.9rem;">${m.topLocation}</div>
       </div>
       <div class="dash-kpi-card">
         <div class="dash-kpi-title"><i class="fas fa-crown"></i> Top Selling Item</div>
-        <div class="dash-kpi-val" style="font-size: 0.95rem;">${m.topItem}</div>
+        <div class="dash-kpi-val" style="font-size: 0.9rem;">${m.topItem}</div>
       </div>
     </div>
 
@@ -247,7 +247,7 @@ function renderDashboardView(container) {
       <div class="dash-col">
         <div class="dash-card tall">
           <div class="dash-card-title">Top 10 Customers</div>
-          <div id="chartTopCustomers" style="min-height: 460px;"></div>
+          <div id="chartTopCustomers" style="min-height: 480px;"></div>
         </div>
       </div>
 
@@ -307,13 +307,17 @@ function initDashboardApexCharts(m) {
     legend: { show: false }
   }).render();
 
-  // 4. Top 10 Customers (Tall Card)
+  // 4. Top 10 Customers (Clean X-axis labels)
   new ApexCharts(document.querySelector("#chartTopCustomers"), {
     series: [{ name: "Revenue (₹)", data: [270000, 180000, 180000, 170000, 140000, 120000, 95000, 80000, 65000, 45000] }],
-    chart: { type: 'bar', height: 460, toolbar: { show: false } },
-    plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
-    colors: ['#2c3e50'],
-    xaxis: { categories: ['Sunrise Fab', 'Vertex Tech', 'Global Eng', 'Apex Builders', 'Ultra Tech', 'L&T Infra', 'Godrej', 'Tata Motors', 'Mahindra', 'Reliance'] }
+    chart: { type: 'bar', height: 440, toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '65%' } },
+    colors: ['#34495e'],
+    xaxis: {
+      categories: ['Sunrise Fab', 'Vertex Tech', 'Global Eng', 'Apex Builders', 'Ultra Tech', 'L&T Infra', 'Godrej', 'Tata Motors', 'Mahindra', 'Reliance'],
+      labels: { formatter: (val) => (val / 1000) + 'k' }
+    },
+    grid: { padding: { bottom: 15 } }
   }).render();
 
   // 5. Purchase By Location

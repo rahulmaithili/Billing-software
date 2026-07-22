@@ -1,4 +1,4 @@
-/* Billing Software - Enterprise ERP Theme with Tooltip Hover on Collapsed Sidebar */
+/* Billing Software - Enterprise ERP Theme & Modal Overlay Fixes */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
@@ -327,30 +327,33 @@ body {
 
 /* Dashboard 7 KPI Cards Row */
 .dash-header-section {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .dash-header-section h1 {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--sidebar-bg);
 }
 
 .dash-header-section p {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   margin-top: 2px;
 }
 
 .dash-kpi-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
 .dash-kpi-card {
+  flex: 1;
+  min-width: 150px;
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -365,7 +368,7 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--sidebar-bg);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   white-space: nowrap;
 }
 
@@ -415,21 +418,84 @@ body {
   min-height: 520px;
 }
 
-/* Action Header Bar */
-.table-header-bar {
+/* === CRITICAL FIX FOR MODALS & OVERLAYS === */
+
+/* Hide all inline modal dialogs by default so they don't dump onto the page body! */
+.modal,
+.modal-backdrop,
+#addItemTypeModal,
+#addItemCategoryModal,
+#addItemSubcategoryModal,
+#addItemModal,
+#addStateModal,
+#addCityModal,
+#addSupplierModal,
+#addCustomerModal,
+#addPmtStatusModal,
+#addShippingStatusModal,
+#addPoModal,
+#soModalNewSO,
+#addReceiptModal,
+#addPaymentModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+}
+
+/* Display modal overlay when active or opened via JS */
+.modal.show,
+.modal.in,
+.modal.active,
+.modal[style*="display: block"] {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal Inner Container Styling */
+.modal-dialog,
+.modal-content,
+.modal-card {
+  background: #ffffff !important;
+  border-radius: var(--radius-lg) !important;
+  max-width: 650px !important;
+  width: 90% !important;
+  padding: 24px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  margin: auto !important;
+  border: 1px solid var(--border-color) !important;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 15px;
   margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.table-header-bar h2 {
+.modal-header h3, .modal-header h4, .modal-title {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.15rem;
   color: var(--sidebar-bg);
+  font-weight: 600;
+}
+
+.close, .modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
 }
 
 /* Buttons */
@@ -463,13 +529,13 @@ body {
   overflow-x: auto;
 }
 
-.custom-table {
+.custom-table, table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
 }
 
-.custom-table th {
+.custom-table th, table th {
   padding: 10px 14px;
   font-family: 'Poppins', sans-serif;
   font-size: 0.85rem;
@@ -480,14 +546,14 @@ body {
   border-bottom: 2px solid var(--border-color);
 }
 
-.custom-table td {
+.custom-table td, table td {
   padding: 12px 14px;
   font-size: 0.9rem;
   color: var(--text-dark);
   border-bottom: 1px solid var(--border-color);
 }
 
-.custom-table tbody tr:hover { background-color: #f1f5f9; }
+.custom-table tbody tr:hover, table tbody tr:hover { background-color: #f1f5f9; }
 
 /* Toast Notifications */
 #toastContainer {
@@ -524,12 +590,10 @@ body {
 }
 
 @media (max-width: 1200px) {
-  .dash-kpi-row { grid-template-columns: repeat(4, 1fr); }
   .dash-charts-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 768px) {
-  .dash-kpi-row { grid-template-columns: repeat(2, 1fr); }
   .dash-charts-grid { grid-template-columns: 1fr; }
   .sidebar { transform: translateX(-100%); width: var(--sidebar-width) !important; }
   .sidebar.mobile-open { transform: translateX(0); }
