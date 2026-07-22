@@ -344,88 +344,194 @@
 
     <!-- ═══ DASHBOARD ═══════════════════════════════════════════════ -->
     <div class="page active" id="p-dashboard">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-[11px] font-bold text-brand-600 uppercase tracking-wider mb-1">Total Sales Revenue</p>
-            <h3 class="text-2xl font-extrabold text-slate-800" style="color: var(--text-dark)" id="kpi-sales">₹0</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Sum of refill items</p>
-          </div>
-          <div class="h-11 w-11 bg-orange-100 dark:bg-orange-955 text-brand-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="indian-rupee" class="h-5 w-5"></i></div>
+
+      <!-- TOP DATE STRIP -->
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest" id="dash-date-label">Loading...</p>
+          <h2 class="text-xl font-extrabold text-slate-800 dark:text-white mt-0.5" id="dash-greeting">Good Morning</h2>
         </div>
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Total Paid Amount</p>
-            <h3 class="text-2xl font-extrabold text-slate-800" style="color: var(--text-dark)" id="kpi-paid">₹0</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Cash + Online received</p>
-          </div>
-          <div class="h-11 w-11 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="check-circle" class="h-5 w-5"></i></div>
-        </div>
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1">Pending Cylinders</p>
-            <h3 class="text-2xl font-extrabold text-slate-800" style="color: var(--text-dark)" id="kpi-pending">0</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Empties due from parties</p>
-          </div>
-          <div class="h-11 w-11 bg-amber-100 dark:bg-amber-950 text-amber-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="package" class="h-5 w-5"></i></div>
-        </div>
-        <div class="glass-card rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-[11px] font-bold text-rose-600 uppercase tracking-wider mb-1">Outstanding Cash Dues</p>
-            <h3 class="text-2xl font-extrabold text-rose-600" id="kpi-dues">₹0</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Unpaid sale balances</p>
-          </div>
-          <div class="h-11 w-11 bg-rose-100 dark:bg-rose-955 text-rose-600 rounded-xl flex items-center justify-center shrink-0"><i data-lucide="alert-triangle" class="h-5 w-5"></i></div>
+        <div class="flex gap-2">
+          <button onclick="nav('sales'); openSaleModal();" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-md shadow-brand-500/20 transition-all">
+            <i data-lucide="plus" class="h-4 w-4"></i> New Invoice
+          </button>
+          <button onclick="nav('returns'); openReturnModal();" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-md transition-all">
+            <i data-lucide="refresh-cw" class="h-4 w-4"></i> Record Return
+          </button>
         </div>
       </div>
 
-      <!-- Pending Empty Cylinders By Product Size -->
-      <div class="glass-card rounded-2xl p-5 shadow-sm mb-6">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-          <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i data-lucide="package" class="h-4 w-4 text-brand-600"></i> Outstanding Empty Cylinders by Size</h4>
-          <span class="text-[10px] bg-brand-500/10 text-brand-600 font-bold px-2 py-0.5 rounded-full border border-brand-500/20">Inventory Dues</span>
+      <!-- KPI CARDS ROW -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group" onclick="nav('sales')">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 bg-orange-100 dark:bg-orange-950/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <i data-lucide="trending-up" class="h-5 w-5 text-brand-600"></i>
+            </div>
+            <span class="text-[10px] bg-orange-50 dark:bg-orange-950/30 text-brand-600 border border-orange-200 dark:border-orange-900/50 font-bold px-2 py-0.5 rounded-full">Revenue</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Revenue</p>
+            <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white mt-0.5" id="kpi-sales">0</h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">From finalized invoices</p>
+          </div>
         </div>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="prod-dues-grid">
-          <div class="col-span-full text-center text-slate-500 py-4 text-sm">Loading...</div>
+
+        <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group" onclick="nav('dues')">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 bg-emerald-100 dark:bg-emerald-950/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <i data-lucide="wallet" class="h-5 w-5 text-emerald-600"></i>
+            </div>
+            <span class="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border border-emerald-200 dark:border-emerald-900/50 font-bold px-2 py-0.5 rounded-full">Collected</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Cash Collected</p>
+            <h3 class="text-2xl font-extrabold text-emerald-600 mt-0.5" id="kpi-paid">0</h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">Cash + Online payments</p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group" onclick="nav('dues')">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 bg-rose-100 dark:bg-rose-950/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <i data-lucide="alert-circle" class="h-5 w-5 text-rose-600"></i>
+            </div>
+            <span class="text-[10px] bg-rose-50 dark:bg-rose-950/30 text-rose-600 border border-rose-200 dark:border-rose-900/50 font-bold px-2 py-0.5 rounded-full">Unpaid</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Outstanding Dues</p>
+            <h3 class="text-2xl font-extrabold text-rose-600 mt-0.5" id="kpi-dues">0</h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">Pending balance dues</p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group" onclick="nav('tracker')">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 bg-amber-100 dark:bg-amber-950/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <i data-lucide="package" class="h-5 w-5 text-amber-600"></i>
+            </div>
+            <span class="text-[10px] bg-amber-50 dark:bg-amber-950/30 text-amber-600 border border-amber-200 dark:border-amber-900/50 font-bold px-2 py-0.5 rounded-full">Due</span>
+          </div>
+          <div>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pending Cylinders</p>
+            <h3 class="text-2xl font-extrabold text-amber-600 mt-0.5" id="kpi-pending">0</h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">Empty cylinders to collect</p>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- MIDDLE ROW: TODAY + QUICK ACTIONS + PRODUCT DUES -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+
+        <!-- Today Activity + Recent Sales -->
+        <div class="glass-card rounded-2xl p-5 shadow-sm lg:col-span-2">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+              <i data-lucide="calendar-check" class="h-4 w-4 text-brand-600"></i> Today at a Glance
+            </h4>
+            <span class="text-[10px] text-slate-500 font-semibold" id="dash-today-date"></span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 rounded-xl p-3 text-center">
+              <p class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Invoices</p>
+              <h4 class="text-2xl font-extrabold text-orange-600 my-0.5" id="today-sales-count">0</h4>
+              <p class="text-[10px] text-slate-500">Created today</p>
+            </div>
+            <div class="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-3 text-center">
+              <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Revenue</p>
+              <h4 class="text-base font-extrabold text-emerald-600 my-1 truncate" id="today-sales-amt">₹0</h4>
+              <p class="text-[10px] text-slate-500">Today total</p>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl p-3 text-center">
+              <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Drafts</p>
+              <h4 class="text-2xl font-extrabold text-amber-600 my-0.5" id="today-drafts-count">0</h4>
+              <p class="text-[10px] text-slate-500">Unfinished</p>
+            </div>
+          </div>
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recent Invoices</p>
+          <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" id="dash-recent-sales">
+            <div class="text-center text-slate-400 text-xs py-4">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions + Product Dues -->
+        <div class="flex flex-col gap-4">
+          <div class="glass-card rounded-2xl p-4 shadow-sm">
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm mb-3 flex items-center gap-2">
+              <i data-lucide="zap" class="h-4 w-4 text-brand-600"></i> Quick Actions
+            </h4>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="nav('sales'); openSaleModal();" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-brand-50 dark:bg-brand-950/20 border border-brand-100 dark:border-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-950/40 transition-all group">
+                <i data-lucide="file-plus" class="h-5 w-5 text-brand-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-bold text-brand-700 dark:text-brand-400">New Sale</span>
+              </button>
+              <button onclick="nav('returns'); openReturnModal();" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition-all group">
+                <i data-lucide="refresh-cw" class="h-5 w-5 text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Return</span>
+              </button>
+              <button onclick="nav('parties'); openPartyModal();" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-950/40 transition-all group">
+                <i data-lucide="user-plus" class="h-5 w-5 text-indigo-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400">Add Party</span>
+              </button>
+              <button onclick="nav('reports');" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-950/40 transition-all group">
+                <i data-lucide="bar-chart-2" class="h-5 w-5 text-purple-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-bold text-purple-700 dark:text-purple-400">Reports</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-4 shadow-sm flex-1">
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm mb-3 flex items-center gap-2">
+              <i data-lucide="box" class="h-4 w-4 text-amber-600"></i> Pending by Product
+            </h4>
+            <div class="space-y-2" id="prod-dues-grid">
+              <div class="text-center text-slate-400 text-xs py-3">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: OUTSTANDING + RETURNS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="glass-card rounded-2xl p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i data-lucide="clock" class="h-4 w-4 text-rose-500"></i> Outstanding Empty Cylinders by Party</h4>
-            <span class="text-[10px] bg-rose-100 dark:bg-rose-955 text-rose-650 border border-rose-200 font-bold px-2 py-0.5 rounded-full">Return Needed</span>
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+              <i data-lucide="clock" class="h-4 w-4 text-rose-500"></i> Empty Cylinders Due
+            </h4>
+            <button onclick="nav('tracker')" class="text-[10px] text-brand-600 font-bold hover:underline">View All</button>
           </div>
-          <div class="overflow-y-auto max-h-72 custom-scrollbar">
-            <table class="w-full text-left text-sm">
-              <thead><tr class="bg-slate-200 dark:bg-slate-800/50 text-slate-660 dark:text-slate-400 text-[11px] font-bold uppercase">
-                <th class="p-2.5 rounded-l">Party Name</th><th class="p-2.5">Mobile</th><th class="p-2.5">Cylinder size</th><th class="p-2.5 text-center rounded-r">Pending Qty</th>
+          <div class="overflow-y-auto max-h-56 custom-scrollbar">
+            <table class="w-full text-left text-xs">
+              <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase">
+                <th class="p-2.5 rounded-l">Party</th><th class="p-2.5">Mobile</th><th class="p-2.5">Product</th><th class="p-2.5 text-center rounded-r">Qty</th>
               </tr></thead>
-              <tbody id="dash-outstanding" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+              <tbody id="dash-outstanding" class="divide-y divide-slate-200 dark:divide-slate-800">
                 <tr><td colspan="4" class="p-4 text-center text-slate-500">Loading...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
+
         <div class="glass-card rounded-2xl p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i data-lucide="refresh-cw" class="h-4 w-4 text-emerald-500"></i> Latest Returns</h4>
-            <span class="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-200">Activity Log</span>
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+              <i data-lucide="refresh-cw" class="h-4 w-4 text-emerald-500"></i> Latest Returns
+            </h4>
+            <button onclick="nav('returns')" class="text-[10px] text-brand-600 font-bold hover:underline">View All</button>
           </div>
-          <div class="overflow-y-auto max-h-72 custom-scrollbar">
-            <table class="w-full text-left text-sm">
-              <thead><tr class="bg-slate-200 dark:bg-slate-800/50 text-slate-655 dark:text-slate-400 text-[11px] font-bold uppercase">
-                <th class="p-2.5 rounded-l">Txn#</th><th class="p-2.5">Date</th><th class="p-2.5">Party Name</th><th class="p-2.5">Cylinder</th><th class="p-2.5 text-center rounded-r">Returned Qty</th>
+          <div class="overflow-y-auto max-h-56 custom-scrollbar">
+            <table class="w-full text-left text-xs">
+              <thead><tr class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase">
+                <th class="p-2.5 rounded-l">Date</th><th class="p-2.5">Party</th><th class="p-2.5">Product</th><th class="p-2.5 text-center rounded-r">Returned</th>
               </tr></thead>
-              <tbody id="dash-returns" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                <tr><td colspan="5" class="p-4 text-center text-slate-500">Loading...</td></tr>
+              <tbody id="dash-returns" class="divide-y divide-slate-200 dark:divide-slate-800">
+                <tr><td colspan="4" class="p-4 text-center text-slate-500">Loading...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
-
     <!-- ═══ PARTIES DIRECTORY ═════════════════════════════════════ -->
     <div class="page" id="p-parties">
       <div class="glass-card rounded-xl p-4 shadow-sm flex items-center justify-between mb-5">
@@ -2041,56 +2147,150 @@ function renderCurrentPage() {
 //  DASHBOARD VIEW
 // ════════════════════════════════════════════════════════════════
 function renderDashboard() {
+  // ── Date & Greeting ──────────────────────────────────────
+  var now = new Date();
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dateStr = dayNames[now.getDay()] + ', ' + now.getDate() + ' ' + monthNames[now.getMonth()] + ' ' + now.getFullYear();
+  var hour = now.getHours();
+  var greeting = hour < 12 ? 'Good Morning ☀️' : hour < 17 ? 'Good Afternoon 🌤️' : 'Good Evening 🌙';
+  if (g('dash-date-label')) g('dash-date-label').textContent = dateStr;
+  if (g('dash-greeting')) g('dash-greeting').textContent = greeting;
+  if (g('dash-today-date')) g('dash-today-date').textContent = dateStr;
+
+  // ── KPIs from DB.sales ────────────────────────────────────
+  var totalRev = 0, totalPaid = 0, totalDues = 0;
+  DB.sales.forEach(function(s) {
+    totalRev  += (s.invoiceTotal || 0);
+    totalPaid += (s.totalPaid   || 0);
+    totalDues += (s.balanceDue  || 0);
+  });
+
+  // Pending cylinders from tracker
+  var pendingCyls = 0;
+  DB.tracker.forEach(function(t) { pendingCyls += (t.pendingQty || 0); });
+
+  if (g('kpi-sales'))   g('kpi-sales').textContent   = fmt(totalRev);
+  if (g('kpi-paid'))    g('kpi-paid').textContent     = fmt(totalPaid);
+  if (g('kpi-dues'))    g('kpi-dues').textContent     = fmt(totalDues);
+  if (g('kpi-pending')) g('kpi-pending').textContent  = pendingCyls;
+
+  // ── Today's Stats ─────────────────────────────────────────
+  var todayStr = [
+    String(now.getDate()).padStart(2,'0'),
+    String(now.getMonth()+1).padStart(2,'0'),
+    now.getFullYear()
+  ].join('-'); // DD-MM-YYYY
+
+  var todaySales = DB.sales.filter(function(s){ return s.date === todayStr; });
+  var todayAmt   = todaySales.reduce(function(a,s){ return a + (s.invoiceTotal||0); }, 0);
+
+  // Count distinct draft invoiceNos
+  var draftNos = {};
+  DB.drafts.forEach(function(d){ draftNos[d.receiptNo] = 1; });
+  var draftCount = Object.keys(draftNos).length;
+
+  if (g('today-sales-count')) g('today-sales-count').textContent = todaySales.length;
+  if (g('today-sales-amt'))   g('today-sales-amt').textContent   = fmt(todayAmt);
+  if (g('today-drafts-count')) g('today-drafts-count').textContent = draftCount;
+
+  // ── Recent 5 Invoices ──────────────────────────────────────
+  var recentEl = g('dash-recent-sales');
+  if (recentEl) {
+    // Group sales by receiptNo and take last 5 unique
+    var seen = {}, recentList = [];
+    var sorted = DB.sales.slice().sort(function(a,b){
+      return (b.receiptNo||'').localeCompare(a.receiptNo||'');
+    });
+    sorted.forEach(function(s){
+      if (!seen[s.receiptNo]) { seen[s.receiptNo] = true; recentList.push(s); }
+    });
+    recentList = recentList.slice(0, 5);
+
+    recentEl.innerHTML = recentList.length ? recentList.map(function(s){
+      var isPaid = (s.balanceDue||0) <= 0.05;
+      var badgeCls = isPaid
+        ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
+        : 'bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400';
+      return '<div class="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">'
+        + '<div class="flex items-center gap-2.5">'
+        + '  <div class="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0"><i data-lucide="file-text" class="h-3.5 w-3.5 text-slate-500"></i></div>'
+        + '  <div>'
+        + '    <p class="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight">' + s.customerName + '</p>'
+        + '    <p class="text-[10px] text-slate-400">#' + s.receiptNo + ' &bull; ' + s.date + '</p>'
+        + '  </div>'
+        + '</div>'
+        + '<div class="text-right shrink-0">'
+        + '  <p class="text-xs font-extrabold text-slate-700 dark:text-slate-200">' + fmt(s.invoiceTotal) + '</p>'
+        + '  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ' + badgeCls + '">' + (isPaid ? 'Paid' : 'Pending') + '</span>'
+        + '</div>'
+        + '</div>';
+    }).join('') : '<div class="text-center text-slate-400 text-xs py-4">No sales yet. <button onclick="nav(\'sales\');openSaleModal();" class="text-brand-600 underline font-bold">Create first invoice</button></div>';
+    lucide.createIcons();
+  }
+
+  // ── Product Dues Mini Cards ────────────────────────────────
+  var pg = g('prod-dues-grid');
+  if (pg) {
+    var prodMap = {};
+    DB.tracker.forEach(function(t){
+      if ((t.pendingQty||0) > 0) {
+        if (!prodMap[t.productName]) prodMap[t.productName] = 0;
+        prodMap[t.productName] += t.pendingQty;
+      }
+    });
+    var prodNames = Object.keys(prodMap);
+    if (prodNames.length) {
+      pg.innerHTML = prodNames.map(function(pn){
+        return '<div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">'
+          + '<div class="flex items-center gap-2">'
+          + '  <div class="h-7 w-7 rounded-lg bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center shrink-0"><i data-lucide="package" class="h-3.5 w-3.5 text-amber-600"></i></div>'
+          + '  <span class="text-xs font-bold text-slate-700 dark:text-slate-300">' + pn + '</span>'
+          + '</div>'
+          + '<span class="text-xs font-extrabold text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-lg">' + prodMap[pn] + ' Cyls</span>'
+          + '</div>';
+      }).join('');
+    } else {
+      pg.innerHTML = '<div class="text-center text-emerald-600 text-xs py-4 font-bold">✓ All cylinders returned!</div>';
+    }
+    lucide.createIcons();
+  }
+
+  // Call GAS for outstanding + returns data
   google.script.run
     .withSuccessHandler(function(d) {
       if(!d.ok) return;
-      g('kpi-sales').textContent = fmt(d.kpis.totalSales);
-      g('kpi-paid').textContent  = fmt(d.kpis.totalSecurity);
-      g('kpi-pending').textContent = d.kpis.pendingCyls;
-      g('kpi-dues').textContent  = fmt(d.kpis.totalDues);
-      
-      // Product pending empty cylinders grid
-      var pg = g('prod-dues-grid');
-      pg.innerHTML = '';
-      var pNames = Object.keys(d.prodDues);
-      if (pNames.length) {
-        pNames.forEach(function(pn) {
-          var details = d.prodDues[pn];
-          pg.innerHTML += '<div class="glass-card p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">'
-            + '<div><p class="text-xs text-slate-500 dark:text-slate-450 font-bold">' + pn + '</p>'
-            + '<h4 class="text-lg font-extrabold text-slate-800 dark:text-white mt-1">' + details.pendingQty + ' <span class="text-[10px] text-slate-550 font-normal font-sans">Cyls</span></h4>'
-            + '</div><i data-lucide="package" class="h-5 w-5 text-brand-600 dark:text-brand-500/50"></i></div>';
-        });
-      } else {
-        pg.innerHTML = '<div class="col-span-full text-center text-slate-500 py-3 text-sm">No pending cylinder returns</div>';
-      }
       
       // Outstanding table
       var doTable = g('dash-outstanding');
-      var oList = d.outstanding.filter(function(x){ return x.pendingQty > 0; });
-      doTable.innerHTML = oList.length ? oList.map(function(t) {
-        return '<tr class="tbl-row border-b border-slate-200 dark:border-slate-800/50">'
-          + '<td class="p-2.5 font-bold text-slate-800 dark:text-white">' + t.customerName + '</td>'
-          + '<td class="p-2.5 text-slate-500 dark:text-slate-400">' + t.mobile + '</td>'
-          + '<td class="p-2.5">' + t.productName + '</td>'
-          + '<td class="p-2.5 text-center font-bold text-rose-500 dark:text-rose-400">' + t.pendingQty + '</td>'
-          + '</tr>';
-      }).join('') : '<tr><td colspan="4" class="p-4 text-center text-slate-500 text-sm">No outstanding empties</td></tr>';
+      if (doTable) {
+        var oList = (d.outstanding || []).filter(function(x){ return x.pendingQty > 0; });
+        doTable.innerHTML = oList.length ? oList.map(function(t) {
+          return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">'
+            + '<td class="p-2.5 font-bold text-slate-800 dark:text-white">' + t.customerName + '</td>'
+            + '<td class="p-2.5 text-slate-500 dark:text-slate-400">' + t.mobile + '</td>'
+            + '<td class="p-2.5 text-slate-600 dark:text-slate-300">' + t.productName + '</td>'
+            + '<td class="p-2.5 text-center"><span class="font-extrabold text-rose-600 bg-rose-50 dark:bg-rose-950/30 px-2 py-0.5 rounded-lg text-xs">' + t.pendingQty + '</span></td>'
+            + '</tr>';
+        }).join('') : '<tr><td colspan="4" class="p-5 text-center text-emerald-600 font-bold text-xs">✓ No outstanding empties!</td></tr>';
+      }
       
       // Returns table
       var drTable = g('dash-returns');
-      drTable.innerHTML = d.latestReturns.length ? d.latestReturns.map(function(r) {
-        return '<tr class="tbl-row border-b border-slate-200 dark:border-slate-800/50">'
-          + '<td class="p-2.5 font-bold text-slate-550 text-xs">' + r.txnNo + '</td>'
-          + '<td class="p-2.5 text-slate-500">' + r.date + '</td>'
-          + '<td class="p-2.5 text-slate-800 dark:text-white font-semibold">' + r.customerName + '</td>'
-          + '<td class="p-2.5">' + r.productName + '</td>'
-          + '<td class="p-2.5 text-center text-emerald-600 dark:text-emerald-400 font-bold">' + r.returnedQty + '</td>'
-          + '</tr>';
-      }).join('') : '<tr><td colspan="5" class="p-4 text-center text-slate-500 text-sm">No returns logged yet.</td></tr>';
+      if (drTable) {
+        drTable.innerHTML = (d.latestReturns||[]).length ? d.latestReturns.map(function(r) {
+          return '<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">'
+            + '<td class="p-2.5 text-slate-500 dark:text-slate-400">' + r.date + '</td>'
+            + '<td class="p-2.5 font-bold text-slate-800 dark:text-white">' + r.customerName + '</td>'
+            + '<td class="p-2.5 text-slate-600 dark:text-slate-300">' + r.productName + '</td>'
+            + '<td class="p-2.5 text-center"><span class="font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-lg text-xs">' + r.returnedQty + '</span></td>'
+            + '</tr>';
+        }).join('') : '<tr><td colspan="4" class="p-5 text-center text-slate-400 text-xs">No returns logged yet.</td></tr>';
+      }
       
       lucide.createIcons();
     })
+    .withFailureHandler(function(e){ console.warn('Dashboard API error:', e); })
     .apiGetDashboardData();
 }
 
