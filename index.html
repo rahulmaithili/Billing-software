@@ -5728,12 +5728,13 @@ function addOnlineDetailRow(num, type) {
     { value: 'Prepaid', text: 'Prepaid' },
     { value: 'Paytm', text: 'Paytm' },
     { value: 'Paytm-Due', text: 'Paytm (Due)' },
-    { value: 'PhonePe', text: 'PhonePe' },
-    { value: 'PhonePe-Due', text: 'PhonePe (Due)' },
-    { value: 'GPay', text: 'GPay' },
-    { value: 'GPay-Due', text: 'GPay (Due)' },
-    { value: 'Other Online', text: 'Other' },
-    { value: 'Other-Due', text: 'Other (Due)' }
+    { value: 'SBI', text: 'SBI' },
+    { value: 'SBI-Due', text: 'SBI (Due)' },
+    { value: 'HPCL', text: 'HPCL' },
+    { value: 'HPCL-Due', text: 'HPCL (Due)' },
+    { value: 'Other', text: 'Other' },
+    { value: 'Other-Due', text: 'Other (Due)' },
+    { value: 'Dues', text: 'Dues' }
   ].map(function(opt) {
     var sel = opt.value === type ? 'selected' : '';
     return '<option value="' + opt.value + '" ' + sel + '>' + opt.text + '</option>';
@@ -5837,6 +5838,17 @@ function onItemProductChange(rowId) {
   calcSaleInvoiceTotals();
 }
 
+function getCylinderCountFromInput(val) {
+  if (!val) return 0;
+  var clean = val.trim().replace(/\s/g, '');
+  if (/^\d+$/.test(clean)) {
+    if (clean.length < 6) {
+      return parseInt(clean) || 0;
+    }
+  }
+  return 1;
+}
+
 function calcSaleInvoiceTotals() {
   var rows = document.querySelectorAll('.item-row');
   var grandTotal = 0;
@@ -5886,10 +5898,11 @@ function calcSaleInvoiceTotals() {
     }
   }
   
-  // Count configured due online rows
+  // Sum configured online cylinders by payment type status
   var onlineRows = document.querySelectorAll('#s-online-details-list > div');
-  var dueOnlineCount = 0;
-  var hasPaidOnlineRow = false;
+  var totalPaidCylinders = 0;
+  var totalDueCylinders = 0;
+  var hasConfiguredRow = false;
   
   onlineRows.forEach(function(row) {
     var numInput = row.querySelector('.s-ond-num');
@@ -5898,25 +5911,31 @@ function calcSaleInvoiceTotals() {
       var numVal = numInput.value.trim().replace(/\s/g, '');
       var typeVal = typeSelect.value;
       
-      // Real-time visual border styling depending on input length
-      if (numVal.length > 0 && numVal.length < 6) {
-        numInput.style.borderColor = '#eab308'; // Tailwind yellow-500 for warning/incomplete
-        numInput.title = 'Consumer number is usually 6 digits';
-      } else if (numVal.length >= 6) {
-        numInput.style.borderColor = '#10b981'; // Tailwind emerald-500 for complete/success
-        numInput.title = 'Valid 6-digit consumer number';
-      } else {
-        numInput.style.borderColor = ''; // default border color
-        numInput.title = '';
-      }
-      
-      // Check if it is a due row
+      // Real-time border styling
       if (numVal.length > 0) {
-        if (typeVal.indexOf('-Due') !== -1) {
-          dueOnlineCount++;
+        hasConfiguredRow = true;
+        if (/^\d+$/.test(numVal)) {
+          if (numVal.length < 6) {
+            numInput.style.borderColor = '#10b981'; // Green for cylinder quantity
+            numInput.title = 'Quantity: ' + numVal + ' cylinder(s)';
+          } else {
+            numInput.style.borderColor = '#10b981'; // Green for 6+ digit consumer number
+            numInput.title = 'Consumer Number: ' + numVal;
+          }
         } else {
-          hasPaidOnlineRow = true;
+          numInput.style.borderColor = '#10b981'; // Green for alphanumeric transaction ref
+          numInput.title = 'Transaction ID: ' + numVal;
         }
+        
+        var count = getCylinderCountFromInput(numVal);
+        if (typeVal.indexOf('-Due') !== -1 || typeVal === 'Dues') {
+          totalDueCylinders += count;
+        } else {
+          totalPaidCylinders += count;
+        }
+      } else {
+        numInput.style.borderColor = '';
+        numInput.title = '';
       }
     }
   });
@@ -5925,8 +5944,8 @@ function calcSaleInvoiceTotals() {
   cashCylinders.forEach(function(r) { expectedCash += r; });
   
   var expectedOnline = 0;
-  if (onlineRows.length > 0 && (hasPaidOnlineRow || dueOnlineCount > 0)) {
-    var paidCylCount = Math.max(0, onlineCylinders.length - dueOnlineCount);
+  if (onlineRows.length > 0 && hasConfiguredRow) {
+    var paidCylCount = Math.min(totalPaidCylinders, onlineCylinders.length);
     for (var i = 0; i < paidCylCount; i++) {
       expectedOnline += onlineCylinders[i];
     }
@@ -6060,21 +6079,21 @@ function submitSale(isDraft) {
   
   if (!isDraft && totalOnlineQty > 0) {
     var onlineRows = document.querySelectorAll('#s-online-details-list > div');
-    var enteredCount = 0;
+    var configuredCylinders = 0;
     onlineRows.forEach(function(row) {
       var numInput = row.querySelector('.s-ond-num');
       if (numInput && numInput.value.trim()) {
-        enteredCount++;
+        configuredCylinders += getCylinderCountFromInput(numInput.value.trim());
       }
     });
     
-    if (enteredCount === 0) {
+    if (configuredCylinders !== totalOnlineQty) {
       Swal.fire({
-        title: 'Online Deliveries Details Required',
-        text: 'Please configure at least one online delivery consumer number / payment detail before saving.',
+        title: 'Online Deliveries Mismatch',
+        text: 'You have specified ' + totalOnlineQty + ' online cylinders in the items list, but configured details for ' + configuredCylinders + ' cylinders. Please configure details for all online cylinders before saving.',
         icon: 'warning',
         confirmButtonColor: '#ea580c',
-        confirmButtonText: 'Go Back & Add'
+        confirmButtonText: 'Go Back & Fix'
       });
       return;
     }
